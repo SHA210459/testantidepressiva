@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registrieren</title>
+</head>
+<body>
+    <h1>Registrieren</h1>
+
+    <!-- Registrierungsformular -->
+    <form method="POST" action="{{ url_for('auth.register') }}">
+        <label for="username">Benutzername:</label>
+        <input type="text" id="username" name="username" required><br><br>
+
+        <label for="password">Passwort:</label>
+        <input type="password" id="password" name="password" required><br><br>
+
+        <label for="color">Farbe wählen:</label>
+        <!-- Farbfeld -->
+        <input type="color" id="color" name="color" required><br><br>
+
+        <input type="submit" value="Registrieren">
+    </form>
+
+    <!-- Link zur Login-Seite -->
+    <p>Schon registriert? <a href="{{ url_for('auth.login') }}">Hier einloggen</a></p>
+
+    <!-- Fehlermeldungen anzeigen -->
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul>
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+</body>
+</html>
