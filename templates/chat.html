@@ -173,7 +173,7 @@
         // Empfang von Emoji-Reaktionen
         socket.on('react_message', function(data) {
             const messageElement = document.querySelector(`.message[data-id="${data.message_id}"]`);
-            if (messageElement) {
+            if (messageElement) {   
                 const reactionsDiv = messageElement.querySelector('.reactions');
                 reactionsDiv.innerHTML += ` ${data.emoji}`;
             }
