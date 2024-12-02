@@ -7,10 +7,16 @@ body {
     padding: 20px;
 }
 
+h2 {
+    text-align: center;
+    color: #007bff;
+    margin-bottom: 20px;
+}
+
 /* Nachrichtenfenster */
 #messages {
     border: 1px solid #ddd; /* Dezente Abgrenzung */
-    height: 300px;
+    height: 400px;
     overflow-y: auto; /* Scrollbare Nachrichten */
     padding: 10px;
     background-color: #ffffff; /* Heller Hintergrund */
@@ -23,18 +29,20 @@ body {
 .message {
     margin: 8px 0;
     padding: 10px;
+    background-color: #f9f9f9;
     border-radius: 5px;
-    background-color: #f0f4f8; /* Leicht grauer Hintergrund */
-    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.05); /* Eingedrückte Optik */
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    position: relative;
+}
+
+.message:hover .emoji-button {
+    display: inline-block; /* Emoji-Button anzeigen bei Hover */
 }
 
 .username {
     font-weight: bold;
-    color: #007bff; /* Blaue Schrift für Benutzernamen */
     cursor: pointer;
+    color: #007bff;
 }
 
 .username:hover {
@@ -43,7 +51,24 @@ body {
 
 .time {
     font-size: 12px;
-    color: #999; /* Dezente Zeitangabe */
+    color: #999;
+    margin-left: 10px;
+}
+
+.reactions {
+    display: flex;
+    gap: 5px;
+    margin-top: 5px;
+}
+
+.reactions span {
+    font-size: 16px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.reactions span:hover {
+    transform: scale(1.2);
 }
 
 /* Antworten */
@@ -61,17 +86,19 @@ body {
 #message_input {
     width: calc(100% - 110px);
     padding: 10px;
-    margin-right: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
     box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+    background-color: #fff;
+    color: #333;
+    font-size: 16px;
 }
 
 /* Senden-Button */
 #send_button {
-    background-color: #28a745; /* Grüne Farbe */
+    padding: 10px;
+    background-color: #007bff;
     color: white;
-    padding: 10px 20px;
     border: none;
     border-radius: 5px;
     cursor: pointer;
@@ -81,26 +108,30 @@ body {
 }
 
 #send_button:hover {
-    background-color: #218838; /* Dunkleres Grün beim Hover */
+    background-color: #0056b3;
 }
 
 /* Farbauswahl */
 #colorPicker {
     margin-bottom: 15px;
     display: block;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 5px;
+    background-color: #fff;
+    color: #333;
 }
 
 /* Popup-Menü */
 .popup-menu {
     position: absolute;
-    background-color: #444;
-    color: white;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    padding: 10px;
     display: none;
-    z-index: 1000;
+    background: white;
+    border: 1px solid #ddd;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+    padding: 10px;
+    border-radius: 5px;
 }
 
 .popup-menu button {
@@ -117,4 +148,44 @@ body {
 
 .popup-menu button:hover {
     background-color: #666;
+}
+
+.emoji-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    position: absolute;
+    right: 10px;
+    top: 10px;
+    display: none; /* Standardmäßig ausgeblendet */
+}
+
+.emoji-button:hover {
+    color: #007bff;
+}
+
+/* Antwortinfo */
+#reply_info {
+    font-size: 12px;
+    color: gray;
+    margin-bottom: 10px;
+}
+
+/* Scrollbar-Styling */
+#messages::-webkit-scrollbar {
+    width: 8px;
+}
+
+#messages::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+#messages::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+#messages::-webkit-scrollbar-thumb:hover {
+    background: #555;
 }

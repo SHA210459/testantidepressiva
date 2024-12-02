@@ -123,12 +123,18 @@
                         <span class="username" style="color: ${data.color}">${data.username}</span>: ${data.msg}
                     </span>
                     <span class="time">${data.time}</span>
+                    <button class="emoji-button" onclick="showEmojiPicker(event, '${data.message_id}')">😀</button>
                 `;
 
                 // Add click event to username to show the popup menu
                 messageElement.querySelector('.username').onclick = function(event) {
                     event.stopPropagation();  // Prevent triggering the reply function
                     showPopup(event, data.username);  // Show the popup menu
+                };
+
+                // Add click event to message to set reply
+                messageElement.onclick = function() {
+                    setReplyToMessage(data.msg);  // Set the message to reply to
                 };
 
                 messagesDiv.appendChild(messageElement);
@@ -148,6 +154,30 @@
                 <button onclick="toggleMuteUser('${username}')">Stummschalten/Entstummschalten</button>
             `;
         }
+
+        // Funktion zum Anzeigen des Emoji-Pickers
+        function showEmojiPicker(event, messageId) {
+            currentMessageId = messageId;
+            emojiPicker.togglePicker(event.target);
+        }
+
+        // Event-Listener für Emoji-Auswahl
+        emojiPicker.on('emoji', emoji => {
+            socket.emit('react_message', {
+                message_id: currentMessageId,
+                emoji: emoji,
+                username: username
+            });
+        });
+
+        // Empfang von Emoji-Reaktionen
+        socket.on('react_message', function(data) {
+            const messageElement = document.querySelector(`.message[data-id="${data.message_id}"]`);
+            if (messageElement) {
+                const reactionsDiv = messageElement.querySelector('.reactions');
+                reactionsDiv.innerHTML += ` ${data.emoji}`;
+            }
+        });
     </script>
 </body>
 </html>
