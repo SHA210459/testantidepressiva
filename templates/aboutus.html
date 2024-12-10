@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #eaf2f8;
+            color: #333;
+        }
+        header {
+            background: #3498db;
+            color: white;
+            padding: 1rem 0;
+            text-align: center;
+        }
+        main {
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        section {
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #3498db;
+        }
+        .team-member {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .team-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .team-member img {
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .team-member h3 {
+            margin-top: 10px;
+            color: #333;
+        }
+        address {
+            font-style: normal;
+            line-height: 1.6;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px 0;
+            background: #3498db;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>About Us</h1>
+    </header>
+    <main>
+        <section>
+            <h2>Project Leader</h2>
+            <div class="team-member">
+                <img src="/static/img/arda_karaca.png" alt="Arda Karaca">
+                <h3>Arda Karaca</h3>
+                <p>Email: arda.prima22@gmail.com<br>Phone: +436602004168</p>
+            </div>
+        </section>
+        <section>
+            <h2>Project Team Members</h2>
+            <div class="team-container">
+                <div class="team-member">
+                    <img src="/static/img/mohamed_selmurzaev.png" alt="Mohamed Selmurzaev">
+                    <h3>Mohamed Selmurzaev</h3>
+                    <p>Email: mohamed.selmurzaev@gmail.com<br>Phone: +436602006202</p>
+                </div>
+                <div class="team-member">
+                    <img src="/static/img/petrit_suroji.png" alt="Petrit Suroji">
+                    <h3>Petrit Suroji</h3>
+                    <p>Email: petritsuroji@gmail.com<br>Phone: +436764115848</p>
+                </div>
+                <div class="team-member">
+                    <img src="/static/img/raiyan_shaikh.png" alt="Raiyan Shaikh">
+                    <h3>Raiyan Shaikh</h3>
+                    <p>Email: sha210459@spengergasse.at<br>Phone: +436605971185</p>
+                </div>
+            </div>
+        </section>
+        <section>
+            <h2>Contact Information</h2>
+            <address>
+                HTL Spengergasse<br>
+                Spengergasse 20, 1050 Wien<br>
+            </address>
+        </section>
+    </main>
+    <footer>
+        <p>&copy; 2024 Anti-Depressiva Team</p>
+    </footer>
+</body>
+</html>
