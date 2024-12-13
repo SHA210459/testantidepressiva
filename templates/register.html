@@ -1,40 +1,82 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Registrieren</title>
+
+    <!-- Link to Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Link to general custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Link to header-specific CSS -->
+    <link rel="stylesheet" href="/static/css/header.css">
+    <!-- Link to register-specific CSS -->
+    <link rel="stylesheet" href="/static/css/register.css">
+    <!-- Link to Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Link to Animate.css for animations -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
 </head>
 <body>
-    <h1>Registrieren</h1>
+    <!-- Include the header -->
+    {% include 'header.html' %}
 
-    <!-- Registrierungsformular -->
-    <form method="POST" action="{{ url_for('auth.register') }}">
-        <label for="username">Benutzername:</label>
-        <input type="text" id="username" name="username" required><br><br>
+    <main class="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+        <div class="card shadow-lg p-4 animate__animated animate__fadeInUp" style="width: 100%; max-width: 400px;">
+            <h2 class="text-center mb-4">Registrieren</h2>
 
-        <label for="password">Passwort:</label>
-        <input type="password" id="password" name="password" required><br><br>
+            <!-- Registrierungsformular -->
+            <form method="POST" action="{{ url_for('auth.register') }}">
+                <!-- Benutzername -->
+                <div class="mb-3">
+                    <label for="username" class="form-label">Benutzername</label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="Gib deinen Benutzernamen ein" required>
+                </div>
 
-        <label for="color">Farbe wählen:</label>
-        <!-- Farbfeld -->
-        <input type="color" id="color" name="color" required><br><br>
+                <!-- Passwort -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">Passwort</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Gib dein Passwort ein" required>
+                </div>
 
-        <input type="submit" value="Registrieren">
-    </form>
+                <!-- Farbauswahl -->
+                <div class="mb-3">
+                    <label for="color" class="form-label">Farbe wählen</label>
+                    <input type="color" id="color" name="color" class="form-control form-control-color" value="#ff6600" required>
+                </div>
 
-    <!-- Link zur Login-Seite -->
-    <p>Schon registriert? <a href="{{ url_for('auth.login') }}">Hier einloggen</a></p>
+                <!-- Registrieren-Button -->
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-block">Registrieren</button>
+                </div>
+            </form>
 
-    <!-- Fehlermeldungen anzeigen -->
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-            {% for message in messages %}
-                <li>{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+            <!-- Link zur Login-Seite -->
+            <div class="text-center mt-4">
+                <p>Schon registriert? <a href="{{ url_for('auth.login') }}" class="text-decoration-none">Hier einloggen</a></p>
+            </div>
+
+            <!-- Fehlermeldungen anzeigen -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-danger mt-3" role="alert">
+                        <ul class="mb-0">
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% endwith %}
+        </div>
+    </main>
+
+    <footer class="bg-dark text-white text-center py-3">
+        <p>&copy; 2024 Deine Website</p>
+    </footer>
+
+    <!-- Link to Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
