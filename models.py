@@ -6,8 +6,7 @@ from flask_login import UserMixin
 db = mysql.connector.connect(
     host="localhost",
     user="root",  # Dein MySQL-Benutzername
-    password="",  # Dein MySQL-Passwort
-    database="login_db"  # Dein MySQL-Datenbankname
+    database="antidepressiva"  # Dein MySQL-Datenbankname
 )
 
 # User Modell für Flask-Login
@@ -56,5 +55,21 @@ def create_tables():
     cursor.close()
     print("Tabelle 'users' wurde erfolgreich erstellt.")
 
-# Aufruf der Funktion zum Erstellen der Tabelle
+# Erstellen der `tipps`-Tabelle, falls sie noch nicht existiert
+def create_tips_table():
+    cursor = db.cursor()
+    create_table_query = """
+    CREATE TABLE IF NOT EXISTS tipps (
+        tippsID INT AUTO_INCREMENT PRIMARY KEY,
+        text VARCHAR(255000) NOT NULL,  -- Der Text des Tipps
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """
+    cursor.execute(create_table_query)
+    db.commit()
+    cursor.close()
+    print("Tabelle 'tipps' wurde erfolgreich erstellt.")
+
+# Aufruf der Funktionen zum Erstellen der Tabellen
 create_tables()
+create_tips_table()

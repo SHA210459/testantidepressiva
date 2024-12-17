@@ -4,6 +4,8 @@ from extensions import socketio  # Importiere das SocketIO-Objekt
 from routes.chat import chat_bp
 from routes.auth import auth_bp
 from routes.main import main_bp
+from routes.profile import profile_bp  # Profil-Blueprint importieren
+from routes.tipps import tippsbp
 import mysql.connector
 from werkzeug.security import generate_password_hash, check_password_hash
 from models import User  # Stelle sicher, dass du das User-Modell hast
@@ -21,6 +23,9 @@ login_manager.login_view = 'auth.login'
 app.register_blueprint(auth_bp, url_prefix='/auth')
 app.register_blueprint(main_bp, url_prefix='/')
 app.register_blueprint(chat_bp, url_prefix='/chat')
+app.register_blueprint(profile_bp, url_prefix='/profile')  # Profil-Blueprint registrieren
+app.register_blueprint(tippsbp, url_prefix='/tipps')  # Tipp-Blueprint registrieren
+
 
 # SocketIO initialisieren
 socketio.init_app(app)
@@ -29,8 +34,7 @@ socketio.init_app(app)
 db = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="",  # Ersetze durch dein MySQL-Passwort
-    database="login_db"
+    database="antidepressiva"
 )
 
 # User Loader für Flask-Login
@@ -60,7 +64,7 @@ def internal_server_error(error):
 # Hauptroute
 @app.route('/')
 def index():
-    return redirect(url_for('home'))  # Leitet auf die Hauptseite des Main-Blueprints weiter
+    return redirect(url_for('main.home'))  # 'main.home' für Blueprint-Endpunkt
 
 # Startseite der Anwendung (nach Login)
 @app.route('/home')
@@ -68,3 +72,9 @@ def index():
 def home():
     return render_template('home.html')  # Dies könnte deine Hauptansichtsseite nach dem Login sein
 
+
+# Profilseite für eingeloggte Benutzer
+@app.route('/profile/view')
+@login_required
+def view_profile():
+    return render_template('profile.html')
