@@ -1,35 +1,76 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login</title>
+
+    <!-- Link to Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Link to general custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css">
+    <!-- Link to header-specific CSS -->
+    <link rel="stylesheet" href="/static/css/header.css">
+    <!-- Link to login-specific CSS -->
+    <link rel="stylesheet" href="/static/css/login.css">
+    <!-- Link to Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600&display=swap" rel="stylesheet">
+    <!-- Link to Animate.css for animations -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css" rel="stylesheet">
 </head>
 <body>
-    <h2>Login</h2>
-    <!-- Ändere den Action-Tag hier, damit er zum Blueprint führt -->
-    <form method="POST" action="{{ url_for('auth.login') }}">
-        <label for="username">Benutzername:</label>
-        <input type="text" id="username" name="username" required><br>
+    <!-- Include the header -->
+    {% include 'header.html' %}
 
-        <label for="password">Passwort:</label>
-        <input type="password" id="password" name="password" required><br>
+    <main class="d-flex justify-content-center align-items-center min-vh-100 bg-light">
+        <div class="card shadow-lg p-4 animate__animated animate__fadeInUp" style="width: 100%; max-width: 400px;">
+            <h2 class="text-center mb-4">Login</h2>
 
-        <button type="submit">Einloggen</button>
-    </form>
+            <!-- Login-Formular -->
+            <form method="POST" action="{{ url_for('auth.login') }}">
+                <!-- Benutzername -->
+                <div class="mb-3">
+                    <label for="username" class="form-label">Benutzername</label>
+                    <input type="text" id="username" name="username" class="form-control" placeholder="Gib deinen Benutzernamen ein" required>
+                </div>
 
-    <!-- Fehlermeldungen anzeigen -->
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul>
-                {% for message in messages %}
-                    <li>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+                <!-- Passwort -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">Passwort</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="Gib dein Passwort ein" required>
+                </div>
 
-    <!-- Link zur Registrierung -->
-    <p>Kein Konto? <a href="{{ url_for('auth.register') }}">Registrieren</a></p>
+                <!-- Login-Button -->
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary btn-block">Einloggen</button>
+                </div>
+            </form>
+
+            <!-- Fehlermeldungen anzeigen -->
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="alert alert-danger mt-3" role="alert">
+                        <ul class="mb-0">
+                        {% for message in messages %}
+                            <li>{{ message }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            <!-- Link zur Registrierung -->
+            <div class="text-center mt-4">
+                <p>Kein Konto? <a href="{{ url_for('auth.register') }}" class="text-decoration-none">Registrieren</a></p>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-dark text-white text-center py-3">
+        <p>&copy; 2024 Deine Website</p>
+    </footer>
+
+    <!-- Link to Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
