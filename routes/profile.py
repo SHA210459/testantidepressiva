@@ -1,20 +1,45 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
+from werkzeug.utils import secure_filename
+import os
+from models import User
 
-profile_bp = Blueprint('profile', __name__, url_prefix='/profile')
+profile_bp = Blueprint('profile', __name__)
 
-@profile_bp.route('/view')
+# Verzeichnis für Profilbilder
+UPLOAD_FOLDER = 'static/profile_pics/'
+ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
+
+# Funktion zum Prüfen der erlaubten Dateitypen
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+@profile_bp.route('/profile', methods=['GET', 'POST'])
 @login_required
-def view_profile():
-    return render_template('profile.html', user=current_user)
-
-# Füge die Route für die Profilaktualisierung hinzu
-@profile_bp.route('/update', methods=['GET', 'POST'])
-@login_required
-def update_profile():
+def profile():
     if request.method == 'POST':
-        # Hier könntest du den Code hinzufügen, um die Benutzerinformationen zu aktualisieren
-        current_user.username = request.form['username']
-        current_user.save()  # Oder eine entsprechende Methode zum Speichern der Daten
-        return redirect(url_for('profile.view_profile'))  # Leitet nach der Aktualisierung zurück zum Profil
-    return render_template('update_profile.html', user=current_user)
+        # Formulardaten abrufen
+        username = request.form['username']
+        color = request.form['color']
+        password = request.form.get('password', None)
+        profile_image = None
+
+        # Überprüfen, ob ein neues Profilbild hochgeladen wurde
+        if 'profile_image' in request.files:
+            file = request.files['profile_image']
+            if file and allowed_file(file.filename):
+                filename = secure_filename(file.filename)
+                # Speichern des Bildes im Upload-Ordner
+                file.save(os.path.join(UPLOAD_FOLDER, filename))
+                profile_image = 'profile_pics/' + filename  # Speichere nur den relativen Pfad
+        if not profile_image:
+            profile_image = "profile_pics/default_profile_image.png"  # Standardbild, wenn kein Bild hochgeladen wurde
+
+        # Profil aktualisieren
+        User.update_profile(current_user.id, username, color, password, profile_image)
+        flash('Profil erfolgreich aktualisiert', 'success')
+        return redirect(url_for('profile.profile'))
+
+    # Benutzerdaten abrufen
+    user = User.get_by_id(current_user.id)
+    return render_template('profile.html', user=user)

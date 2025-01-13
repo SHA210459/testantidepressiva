@@ -1,12 +1,3 @@
-/* Allgemeines Layout */
-body {
-    font-family: Arial, sans-serif;
-    background-color: #f7f9fc; /* Dezenter Hintergrund */
-    color: #333;
-    margin: 0;
-    padding: 20px;
-}
-
 h2 {
     text-align: center;
     color: #007bff;
@@ -28,17 +19,38 @@ h2 {
 /* Einzelne Nachrichten */
 .message {
     margin: 8px 0;
-    padding: 10px;
+    padding: 10px 40px 10px 10px; /* Platz für den Pfeil rechts */
     background-color: #f9f9f9;
     border-radius: 5px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     position: relative;
+    transition: background-color 0.3s ease;
 }
 
-.message:hover .emoji-button {
-    display: inline-block; /* Emoji-Button anzeigen bei Hover */
+.message:hover {
+    background-color: #f1f8ff; /* Leichter Hover-Effekt */
 }
 
+/* Antwort-Pfeil */
+.reply-button {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: none;
+    background: none;
+    color: #007bff;
+    font-size: 18px;
+    cursor: pointer;
+    transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.reply-button:hover {
+    color: #0056b3;
+    transform: scale(1.2); /* Leichte Vergrößerung bei Hover */
+}
+
+/* Benutzername */
 .username {
     font-weight: bold;
     cursor: pointer;
@@ -49,12 +61,14 @@ h2 {
     text-decoration: underline; /* Unterstrichen bei Hover */
 }
 
+/* Zeitstempel */
 .time {
     font-size: 12px;
     color: #999;
     margin-left: 10px;
 }
 
+/* Reaktionen */
 .reactions {
     display: flex;
     gap: 5px;
@@ -150,21 +164,6 @@ h2 {
     background-color: #666;
 }
 
-.emoji-button {
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    position: absolute;
-    right: 10px;
-    top: 10px;
-    display: none; /* Standardmäßig ausgeblendet */
-}
-
-.emoji-button:hover {
-    color: #007bff;
-}
-
 /* Antwortinfo */
 #reply_info {
     font-size: 12px;
@@ -188,4 +187,19 @@ h2 {
 
 #messages::-webkit-scrollbar-thumb:hover {
     background: #555;
+}
+
+/* Profilbild-Styling */
+.profile-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.profile-image {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    object-fit: cover;
+    background-color: #f0f0f0;
 }

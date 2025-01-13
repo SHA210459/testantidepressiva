@@ -1,6 +1,9 @@
+import os
+
 from flask import Flask, redirect, url_for, render_template, g
-from flask_login import LoginManager, login_required
+from flask_login import LoginManager, login_required, current_user
 from extensions import socketio
+from routes.about_us import about_us_bp
 from routes.chat import chat_bp
 from routes.auth import auth_bp
 from routes.main import main_bp
@@ -13,6 +16,7 @@ from models import User
 # Flask-Anwendung erstellen
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:@localhost/antidepressiva'
 
 # Flask-Login Konfiguration
 login_manager = LoginManager()
@@ -36,7 +40,7 @@ def teardown_db(exception):
     db = g.pop('db', None)
     if db is not None:
         db.close()
-
+# app.py
 @login_manager.user_loader
 def load_user(user_id):
     db = get_db()
@@ -45,7 +49,9 @@ def load_user(user_id):
     user_data = cursor.fetchone()
     cursor.close()
     if user_data:
-        return User(id=user_data[0], username=user_data[1], color=user_data[3])
+        # Wenn Profilbild vorhanden, wird es geladen
+        profile_image = user_data[4] if user_data[4] else "default_profile_image.jpg"
+        return User(id=user_data[0], username=user_data[1], color=user_data[3], profile_image=profile_image)
     return None
 
 # Blueprints registrieren
@@ -54,6 +60,8 @@ app.register_blueprint(main_bp, url_prefix='/')
 app.register_blueprint(chat_bp, url_prefix='/chat')
 app.register_blueprint(profile_bp, url_prefix='/profile')
 app.register_blueprint(tippsbp, url_prefix='/tipps')
+app.register_blueprint(about_us_bp, url_prefix='/about')  # Registriere den neuen Blueprint
+
 
 # SocketIO initialisieren
 socketio.init_app(app, cors_allowed_origins="*")
@@ -71,9 +79,16 @@ def internal_server_error(error):
 @app.route('/')
 def index():
     return redirect(url_for('main.home'))
-
-# Profilseite für eingeloggte Benutzer
 @app.route('/profile/view')
 @login_required
 def view_profile():
-    return render_template('profile.html')
+    db = get_db()
+    cursor = db.cursor(dictionary=True)
+    cursor.execute("SELECT username, color, profile_image FROM users WHERE id = %s", (current_user.id,))
+    user_data = cursor.fetchone()
+    cursor.close()
+
+    # Profilbild als Base64-String aus der Datenbank laden
+    profile_image = user_data['profile_image'] if user_data['profile_image'] else None
+
+    return render_template('profile.html', user=user_data, profile_image=profile_image)

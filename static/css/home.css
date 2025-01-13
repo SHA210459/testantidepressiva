@@ -14,6 +14,5 @@ main {
 .welcome-section p {
     font-size: 1.4rem;
     color: #555;
-    animation: fadeInUp 1s ease-in-out 1s;
     font-weight: 300;
 }

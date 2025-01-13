@@ -10,7 +10,11 @@ body {
     background: #f4f4f4; /* Helles Hintergrundbild für ein modernes Aussehen */
     color: #333;
 }
-
+.card-title {
+    color: #3498db;
+    font-size: 1.2em;
+    font-weight: bold;
+}
 /* Footer Styles */
 footer {
     background-color: #222;
@@ -41,3 +45,5 @@ footer {
         font-size: 1.1rem;
     }
 }
+
+

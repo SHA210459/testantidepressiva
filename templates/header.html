@@ -7,6 +7,9 @@
 
     <!-- Link to the external CSS file -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+
+    <!-- Google Font für coole Schrift -->
+    <link href="https://fonts.googleapis.com/css2?family=Raleway:wght@700&display=swap" rel="stylesheet">
 </head>
 <body>
     <header class="bg-primary text-white sticky-top shadow-lg">
@@ -15,6 +18,8 @@
             <a href="{{ url_for('main.home') }}" class="logo">
                 <img src="{{ url_for('static', filename='img/logo.png') }}" alt="Logo" class="img-fluid">
             </a>
+            <!-- "Antidepressiva" Text mit coolem Font -->
+
             <!-- Navigationsbereich -->
             <nav>
                 <ul class="nav">
@@ -22,11 +27,32 @@
                         <a class="nav-link text-white" href="{{ url_for('chat.chat') }}">Zum Chat-Raum</a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ url_for('tipps.show_tipps') }}">Tipps</a> <!-- Link zu tipps.html -->
+                    </li>
+
+                    <li class="nav-item">
+                    <a class="nav-link text-white" href="{{ url_for('about_us.about_us') }}">About Us</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ url_for('profile.profile') }}">Profil</a>
+                    </li>
+
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
                         <a class="nav-link text-white" href="{{ url_for('auth.logout') }}">Abmelden</a>
                     </li>
+                    {% else %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ url_for('auth.login') }}">Anmelden</a>
+                    </li>
+                    {% endif %}
                 </ul>
             </nav>
         </div>
     </header>
+
+
 </body>
+
+
 </html>

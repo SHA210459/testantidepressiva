@@ -31,9 +31,9 @@ def login():
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
-        username = request.form['username']
-        password = request.form['password']
-        color = request.form['color']
+        username = request.form.get('username')
+        password = request.form.get('password')
+        color = request.form.get('color', '#ff6600')  # Standardfarbe verwenden, falls nicht gesetzt
 
         # Überprüfen, ob der Benutzername bereits existiert
         cursor = db.cursor()
@@ -47,21 +47,22 @@ def register():
 
         # Passwort hashen und neuen Benutzer hinzufügen
         hashed_password = generate_password_hash(password)
+        profile_image = 'static/uploads/profile_images/default_profile_image.png'  # Standardbild
+
         cursor = db.cursor()
-        cursor.execute("INSERT INTO users (username, password, color) VALUES (%s, %s, %s)",
-                       (username, hashed_password, color))
+        cursor.execute("INSERT INTO users (username, password, color, profile_image) VALUES (%s, %s, %s, %s)",
+                       (username, hashed_password, color, profile_image))
         db.commit()
         user_id = cursor.lastrowid
         cursor.close()
 
         # Benutzer automatisch anmelden
-        user = User(id=user_id, username=username, color=color)
+        user = User(id=user_id, username=username, color=color, profile_image=profile_image)
         login_user(user)
         flash("Registrierung erfolgreich! Willkommen!", "success")
         return redirect(url_for('main.home'))
 
     return render_template('register.html')
-
 @auth_bp.route('/logout')
 @login_required
 def logout():

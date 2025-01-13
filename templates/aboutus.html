@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About Us</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="/static/css/header.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            margin: 0;
+            padding: 0;
+            background-color: #eaf2f8;
+            color: #333;
+        }
+        main {
+            padding: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        section {
+            margin-bottom: 20px;
+        }
+        h1, h2 {
+            text-align: center;
+            color: #3498db;
+        }
+        .team-member {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .team-container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .team-member img {
+            border-radius: 50%;
+            width: 150px;
+            height: 150px;
+            object-fit: cover;
+            box-shadow: 0 0 5px rgba(0, 0, 0, 0.1);
+        }
+        .team-member h3 {
+            margin-top: 10px;
+            color: #333;
+        }
+        address {
+            font-style: normal;
+            line-height: 1.6;
+        }
+        footer {
+            text-align: center;
+            margin-top: 20px;
+            padding: 10px 0;
+            background: #3498db;
+            color: white;
+        }
+        .why-section {
+            margin-top: 40px;
+            background-color: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .why-section h2 {
+            color: #3498db;
+        }
+        .why-section p {
+            font-size: 1.1em;
+            line-height: 1.8;
+        }
+    </style>
+</head>
+<body>
+    {% include 'header.html' %}
+
+    <main>
+        <section>
+            <h2>Project Leader</h2>
+            <div class="team-member">
+                <img src="/static/img/arda_karaca.png" alt="Arda Karaca">
+                <h3>Arda Karaca</h3>
+                <p>Email: arda.prima22@gmail.com<br>Phone: +436602004168</p>
+            </div>
+        </section>
+        <section>
+            <h2>Projektteammitglieder</h2>
+            <div class="team-container">
+                <div class="team-member">
+                    <img src="/static/img/mohamed_selmurzaev.png" alt="Mohamed Selmurzaev">
+                    <h3>Mohamed Selmurzaev</h3>
+                    <p>Email: mohamed.selmurzaev@gmail.com<br>Phone: +436602006202</p>
+                </div>
+                <div class="team-member">
+                    <img src="/static/img/petrit_suroji.png" alt="Petrit Suroji">
+                    <h3>Petrit Suroji</h3>
+                    <p>Email: petritsuroji@gmail.com<br>Phone: +436764115848</p>
+                </div>
+                <div class="team-member">
+                    <img src="/static/img/raiyan_shaikh.png" alt="Raiyan Shaikh">
+                    <h3>Raiyan Shaikh</h3>
+                    <p>Email: sha210459@spengergasse.at<br>Phone: +436605971185</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Why we did this section -->
+        <section class="why-section">
+            <h2>Warum haben wir das gemacht?</h2>
+            <p>Dieses Projekt entstand aus dem Wunsch, eine sinnvolle Lösung für ein weit verbreitetes Problem zu entwickeln. Unsere Motivation war es, ein Tool oder eine Plattform zu schaffen, die den Alltag der Menschen in einer digitalen Welt verbessert. Wir haben uns auf diese Herausforderung eingelassen, um unser Wissen und unsere Fähigkeiten zu erweitern und gleichzeitig etwas Positives zu bewirken.</p>
+            <p>Jeder von uns brachte einzigartige Erfahrungen und Perspektiven ein, und unser Team ist stolz darauf, zusammen an diesem Projekt zu arbeiten. Wir sind überzeugt, dass wir mit unserer Arbeit einen Unterschied machen können und hoffen, dass unser Projekt auch Ihnen hilft, Ihre Ziele zu erreichen.</p>
+        </section>
+
+    </main>
+
+</body>
+</html>

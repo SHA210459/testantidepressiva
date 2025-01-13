@@ -1,14 +1,15 @@
 /* Header-Hintergrund und Layout */
 header {
-    background: linear-gradient(135deg, #007BFF, #00C6FF);
+    background: linear-gradient(135deg, #007BFF, #00C6FF);  /* Gradient-Hintergrund */
     color: white;
     position: sticky;
     top: 0;
     z-index: 1000;
     padding: 20px 0;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-    //breite
-    width: 100%;
+    width: 100vw;  /* Setzt den Header auf die volle Breite des Viewports */
+    left: 0;  /* Sicherstellen, dass der Header am linken Rand beginnt */
+    margin: 0;  /* Entfernt alle Abstände */
 }
 
 /* Logo-Animation */
@@ -19,14 +20,26 @@ header .logo img {
 
 header .logo:hover img {
     transform: scale(1.1);
-    box-shadow: 0 0 15px  rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Schriftart und Stil für Antidepressiva */
+.font-antidepressiva {
+    font-family: 'Raleway', sans-serif;  /* Coole Schriftart */
+    font-weight: 700;
+    font-size: 30px;
+    color: white;
+    margin-left: -400px; /* Verringert den Abstand zwischen Logo und Text */
 }
 
 /* Navigation-Styling */
 nav ul {
     list-style: none;
     display: flex;
-    gap: 0px;
+    gap: 20px;
+    justify-content: center;  /* Zentriert die Navigation */
+    margin: 0; /* Entfernt den Standardabstand */
+    padding: 0;
 }
 
 nav ul li a {

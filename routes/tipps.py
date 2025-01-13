@@ -8,7 +8,6 @@ tippsbp = Blueprint('tipps', __name__)
 db = mysql.connector.connect(
     host="localhost",
     user="root",  # Dein MySQL-Benutzername
-    password="",  # Dein MySQL-Passwort
     database="antidepressiva"  # Dein MySQL-Datenbankname
 )
 

@@ -1,39 +1,60 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Profil bearbeiten</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <!-- Bootstrap -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css">
-</head>
-<body>
-    <header class="bg-primary text-white sticky-top shadow-lg">
-        <div class="container py-3">
-            <h1 class="text-center">Profil bearbeiten</h1>
+{% include 'header.html' %}
+
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Profil bearbeiten</title>
+<!-- Link to Bootstrap CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+<!-- Link to general custom CSS -->
+<link rel="stylesheet" href="/static/css/style.css">
+<!-- Link to header-specific CSS -->
+<link rel="stylesheet" href="/static/css/header.css">
+
+<div class="container mt-5">
+    <h1 class="text-center">Profil bearbeiten</h1>
+
+    <!-- Flash-Meldung für Erfolg oder Fehler -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <div class="alert alert-info">
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" enctype="multipart/form-data" class="mt-4">
+        <div class="mb-3">
+            <label for="username" class="form-label">Benutzername:</label>
+            <input type="text" id="username" name="username" value="{{ user['username'] }}" required class="form-control">
         </div>
-    </header>
 
-    <main class="container mt-4">
-        <form action="{{ url_for('profile.update_profile') }}" method="POST">
-            <div class="mb-3">
-                <label for="username" class="form-label">Benutzername</label>
-                <input type="text" id="username" name="username" class="form-control" value="{{ user.username }}" required>
-            </div>
-            <div class="mb-3">
-                <label for="email" class="form-label">E-Mail-Adresse</label>
-                <input type="email" id="email" name="email" class="form-control" value="{{ user.email }}" required>
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Neues Passwort</label>
-                <input type="password" id="password" name="password" class="form-control">
-            </div>
-            <button type="submit" class="btn btn-primary">Speichern</button>
-        </form>
-    </main>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+        <div class="mb-3">
+            <label for="password" class="form-label">Passwort:</label>
+            <input type="password" id="password" name="password" class="form-control">
+        </div>
+
+             <div class="mb-3">
+    <label for="color" class="form-label">Farbe:</label>
+    <!-- RGB Color Picker mit angepasster Breite -->
+    <input type="color" id="color" name="color" value="{{ user['color'] }}" class="form-control" style="width: 150px;">
+</div>
+
+        <div class="mb-3">
+            <label for="profile_image" class="form-label">Profilbild:</label>
+            <input type="file" id="profile_image" name="profile_image" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Aktuelles Profilbild:</label><br>
+            <img src="{{ url_for('static', filename=user.profile_image) }}" alt="Profilbild" class="img-fluid" style="max-width: 150px; max-height: 150px;">
+        </div>
+
+        <button type="submit" class="btn btn-primary w-100">Profil speichern</button>
+    </form>
+</div>
+
 </body>
 </html>

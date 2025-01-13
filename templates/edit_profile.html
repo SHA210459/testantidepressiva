@@ -1,0 +1,30 @@
+<!-- templates/edit_profile.html -->
+{% extends 'header.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <h2>Profil bearbeiten</h2>
+    <form method="POST" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label for="username" class="form-label">Benutzername</label>
+            <input type="text" class="form-control" id="username" name="username" value="{{ user.username }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="color" class="form-label">Farbe</label>
+            <input type="color" class="form-control" id="color" name="color" value="{{ user.color }}" required>
+        </div>
+        <div class="mb-3">
+            <label for="password" class="form-label">Neues Passwort (optional)</label>
+            <input type="password" class="form-control" id="password" name="password">
+        </div>
+        <div class="mb-3">
+            <label for="profile_image" class="form-label">Profilbild (optional)</label>
+            <input type="file" class="form-control" id="profile_image" name="profile_image">
+        </div>
+        <div class="mb-3">
+            <img src="{{ url_for('static', filename='img/' + user.profile_image) }}" alt="Profilbild" class="img-fluid" style="max-width: 200px;">
+        </div>
+        <button type="submit" class="btn btn-primary">Speichern</button>
+    </form>
+</div>
+{% endblock %}
