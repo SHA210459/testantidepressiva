@@ -27,7 +27,6 @@ def login():
             flash('Ungültiger Benutzername oder Passwort', 'error')
 
     return render_template("login.html")
-
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -48,10 +47,11 @@ def register():
         # Passwort hashen und neuen Benutzer hinzufügen
         hashed_password = generate_password_hash(password)
         profile_image = 'static/uploads/profile_images/default_profile_image.png'  # Standardbild
+        role = 'user'  # Rolle automatisch auf 'user' setzen
 
         cursor = db.cursor()
-        cursor.execute("INSERT INTO users (username, password, color, profile_image) VALUES (%s, %s, %s, %s)",
-                       (username, hashed_password, color, profile_image))
+        cursor.execute("INSERT INTO users (username, password, color, profile_image, role) VALUES (%s, %s, %s, %s, %s)",
+                       (username, hashed_password, color, profile_image, role))
         db.commit()
         user_id = cursor.lastrowid
         cursor.close()
@@ -61,6 +61,8 @@ def register():
         login_user(user)
         flash("Registrierung erfolgreich! Willkommen!", "success")
         return redirect(url_for('main.home'))
+
+    return render_template('register.html')
 
     return render_template('register.html')
 @auth_bp.route('/logout')

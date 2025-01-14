@@ -22,7 +22,7 @@ def profile():
         username = request.form['username']
         color = request.form['color']
         password = request.form.get('password', None)
-        profile_image = None
+        profile_image = request.form.get('current_profile_image', None)
 
         # Überprüfen, ob ein neues Profilbild hochgeladen wurde
         if 'profile_image' in request.files:
@@ -38,7 +38,7 @@ def profile():
         # Profil aktualisieren
         User.update_profile(current_user.id, username, color, password, profile_image)
         flash('Profil erfolgreich aktualisiert', 'success')
-        return redirect(url_for('profile.profile'))
+        return redirect(url_for('main.home'))
 
     # Benutzerdaten abrufen
     user = User.get_by_id(current_user.id)

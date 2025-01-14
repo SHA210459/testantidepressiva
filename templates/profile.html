@@ -13,7 +13,7 @@
 <div class="container mt-5">
     <h1 class="text-center">Profil bearbeiten</h1>
 
-    <!-- Flash-Meldung für Erfolg oder Fehler -->
+    <!-- Flash-Meldung fÃ¼r Erfolg oder Fehler -->
     {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
             <div class="alert alert-info">
@@ -51,6 +51,8 @@
             <label class="form-label">Aktuelles Profilbild:</label><br>
             <img src="{{ url_for('static', filename=user.profile_image) }}" alt="Profilbild" class="img-fluid" style="max-width: 150px; max-height: 150px;">
         </div>
+
+        <input type="hidden" name="current_profile_image" value="{{ user['profile_image'] }}">
 
         <button type="submit" class="btn btn-primary w-100">Profil speichern</button>
     </form>
