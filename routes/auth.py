@@ -46,7 +46,7 @@ def register():
 
         # Passwort hashen und neuen Benutzer hinzufügen
         hashed_password = generate_password_hash(password)
-        profile_image = 'static/uploads/profile_images/default_profile_image.png'  # Standardbild
+        profile_image = 'static/profile_images/default_profile_image.png'  # Standardbild
         role = 'user'  # Rolle automatisch auf 'user' setzen
 
         cursor = db.cursor()

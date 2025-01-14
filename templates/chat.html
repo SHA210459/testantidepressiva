@@ -95,6 +95,7 @@
         socket.on('receive_message', function(data) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', 'position-relative', 'mb-3', 'p-2', 'rounded', 'shadow-sm', 'bg-light');
+            console.log('Profilbild-Pfad:', data.profile_image); // Debugging-Zeile
 
             // Profilbildpfad
             const profileImageUrl = data.profile_image && data.profile_image !== "null"
