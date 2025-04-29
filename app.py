@@ -4,6 +4,7 @@ from flask import Flask, redirect, url_for, render_template, g
 from flask_login import LoginManager, login_required, current_user
 from extensions import socketio
 from routes.about_us import about_us_bp
+from routes.admin import admin_bp
 from routes.chat import chat_bp
 from routes.auth import auth_bp
 from routes.main import main_bp
@@ -61,6 +62,9 @@ app.register_blueprint(chat_bp, url_prefix='/chat')
 app.register_blueprint(profile_bp, url_prefix='/profile')
 app.register_blueprint(tippsbp, url_prefix='/tipps')
 app.register_blueprint(about_us_bp, url_prefix='/about')  # Registriere den neuen Blueprint
+
+app.register_blueprint(admin_bp, url_prefix='/admin')
+
 
 
 # SocketIO initialisieren

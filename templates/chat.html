@@ -40,6 +40,7 @@
     <script>
         const socket = io();
         const username = "{{ current_user.username }}"; // Benutzernamen von Flask abrufen
+        const userColor = "{{ current_user.color }}"; // Benutzerfarbe von Flask abrufen
 
         const messagesDiv = document.getElementById('messages');
         const messageInput = document.getElementById('message_input');
@@ -58,6 +59,7 @@
                 socket.emit('send_message', {
                     msg: message,
                     username: username,
+                    color: userColor, // Benutzerfarbe wird verwendet
                     replyTo: replyingTo // Antwort hinzufügen
                 });
 
@@ -95,11 +97,10 @@
         socket.on('receive_message', function(data) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', 'position-relative', 'mb-3', 'p-2', 'rounded', 'shadow-sm', 'bg-light');
-            console.log('Profilbild-Pfad:', data.profile_image); // Debugging-Zeile
 
             // Profilbildpfad
             const profileImageUrl = data.profile_image && data.profile_image !== "null"
-                ? `/static/${data.profile_image}`
+                ? `static/profile_pics/${data.profile_image}`
                 : '/static/profile_pics/default_profile_image.png'; // Fallback-Bild
 
             messageElement.innerHTML = `

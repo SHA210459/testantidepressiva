@@ -42,3 +42,14 @@ def handle_react_message(data):
         'emoji': emoji,
         'username': username
     }, broadcast=True)
+
+    @socketio.on('delete_message')
+    def handle_delete_message(data):
+        message_id = data.get('message_id')
+
+        # Nur Admins dürfen löschen
+        if not current_user.is_authenticated or current_user.role != 'admin':
+            return
+
+        # Sende Info an alle Clients, dass die Nachricht gelöscht werden soll
+        emit('message_deleted', {'message_id': message_id}, broadcast=True)

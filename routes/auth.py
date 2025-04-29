@@ -19,9 +19,14 @@ def login():
 
         # Überprüfen, ob der Benutzer existiert und das Passwort stimmt
         if user_data and check_password_hash(user_data[2], password):
-            user = User(id=user_data[0], username=user_data[1], color=user_data[3])
+            user = User(
+                id=user_data[0],
+                username=user_data[1],
+                color=user_data[3],
+                profile_image=user_data[6],
+                role=user_data[4]  # Index 4 ist die 'role'-Spalte
+            )
             login_user(user)
-            flash("Login erfolgreich!", "success")
             return redirect(url_for('main.home'))
         else:
             flash('Ungültiger Benutzername oder Passwort', 'error')
@@ -44,11 +49,14 @@ def register():
             flash("Benutzername bereits vergeben!", "error")
             return redirect(url_for('auth.register'))
 
-        # Passwort hashen und neuen Benutzer hinzufügen
+        # Passwort hashen
         hashed_password = generate_password_hash(password)
         profile_image = 'static/profile_images/default_profile_image.png'  # Standardbild
-        role = 'user'  # Rolle automatisch auf 'user' setzen
 
+        # Rolle basierend auf dem Benutzernamen festlegen
+        role = 'admin' if username.lower() == 'admin' else 'user'
+
+        # Neuen Benutzer in die Datenbank einfügen
         cursor = db.cursor()
         cursor.execute("INSERT INTO users (username, password, color, profile_image, role) VALUES (%s, %s, %s, %s, %s)",
                        (username, hashed_password, color, profile_image, role))
@@ -57,14 +65,18 @@ def register():
         cursor.close()
 
         # Benutzer automatisch anmelden
-        user = User(id=user_id, username=username, color=color, profile_image=profile_image)
+        user = User(
+            id=user_id,
+            username=username,
+            color=color,
+            profile_image=profile_image,
+            role=role  # ← hier ist 'admin' oder 'user' korrekt gesetzt
+        )
         login_user(user)
-        flash("Registrierung erfolgreich! Willkommen!", "success")
         return redirect(url_for('main.home'))
 
     return render_template('register.html')
 
-    return render_template('register.html')
 @auth_bp.route('/logout')
 @login_required
 def logout():

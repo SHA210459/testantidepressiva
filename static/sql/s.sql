@@ -1,1 +1,1 @@
-SELECT profile_image FROM antidepressiva.users WHERE id = 1;
+UPDATE users SET role = 'admin' WHERE username = 'admin';

@@ -46,9 +46,13 @@ class User(UserMixin):
         user_data = cursor.fetchone()
         cursor.close()
         if user_data:
-            # Stelle sicher, dass alle Attribute korrekt übergeben werden (einschließlich role)
-            return cls(user_data[0], user_data[1], user_data[3], user_data[4],
-                       user_data[5])  # [id, username, password, color, profile_image, role]
+            return cls(
+                id=user_data[0],
+                username=user_data[1],
+                color=user_data[3],
+                profile_image=user_data[6],
+                role=user_data[4]
+            )
         return None
 
     @staticmethod
