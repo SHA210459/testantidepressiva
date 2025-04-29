@@ -1,1 +1,1 @@
-UPDATE users SET role = 'admin' WHERE username = 'admin';
+ALTER TABLE users ADD COLUMN is_banned BOOLEAN DEFAULT FALSE;
