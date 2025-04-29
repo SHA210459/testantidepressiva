@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template
-from flask_login import login_required
+from flask_login import login_required, current_user
 from datetime import datetime
 from extensions import socketio
 from flask_socketio import emit
@@ -19,8 +19,9 @@ def handle_send_message(data):
     color = data.get('color')
     reply_to = data.get('replyTo')
     timestamp = datetime.now().strftime('%H:%M')
-    message_id = str(uuid.uuid4())
+    message_id = str(uuid.uuid4())  # Generiere eine einzigartige ID für die Nachricht
 
+    # Sende die Nachricht an alle Clients
     emit('receive_message', {
         'msg': message,
         'username': username,
@@ -37,8 +38,20 @@ def handle_react_message(data):
     emoji = data.get('emoji')
     username = data.get('username')
 
+    # Sende das Emoji-Reaktions-Event an alle Clients
     emit('react_message', {
         'message_id': message_id,
         'emoji': emoji,
         'username': username
     }, broadcast=True)
+
+@socketio.on('delete_message')
+def handle_delete_message(data):
+    message_id = data.get('message_id')
+
+    # Nur Admins dürfen Nachrichten löschen
+    if not current_user.is_authenticated or current_user.role != 'admin':
+        return
+
+    # Sende Info an alle Clients, dass die Nachricht gelöscht werden soll
+    emit('message_deleted', {'message_id': message_id}, broadcast=True)

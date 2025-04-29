@@ -40,6 +40,7 @@
     <script>
         const socket = io();
         const username = "{{ current_user.username }}"; // Benutzernamen von Flask abrufen
+        const userColor = "{{ current_user.color }}"; // Benutzerfarbe von Flask abrufen
 
         const messagesDiv = document.getElementById('messages');
         const messageInput = document.getElementById('message_input');
@@ -58,6 +59,7 @@
                 socket.emit('send_message', {
                     msg: message,
                     username: username,
+                    color: userColor, // Benutzerfarbe wird verwendet
                     replyTo: replyingTo // Antwort hinzufügen
                 });
 
@@ -95,11 +97,11 @@
         socket.on('receive_message', function(data) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', 'position-relative', 'mb-3', 'p-2', 'rounded', 'shadow-sm', 'bg-light');
-            console.log('Profilbild-Pfad:', data.profile_image); // Debugging-Zeile
+            messageElement.setAttribute('data-message-id', data.message_id); // Setze eine ID für die Nachricht
 
             // Profilbildpfad
             const profileImageUrl = data.profile_image && data.profile_image !== "null"
-                ? `/static/${data.profile_image}`
+                ? `static/profile_pics/${data.profile_image}`
                 : '/static/profile_pics/default_profile_image.png'; // Fallback-Bild
 
             messageElement.innerHTML = `
@@ -113,7 +115,17 @@
                 <button class="reply-button btn btn-outline-secondary btn-sm position-absolute end-0 top-50 translate-middle-y me-2">
                     &#8592; Antworten
                 </button>
+             <button class="delete-button btn btn-danger btn-sm position-absolute" style="right: 10px; bottom: 20px; transform: translateY(50%);">
+    &#10060; Löschen
+</button>
             `;
+
+            // Löschen-Button hinzufügen
+            const deleteButton = messageElement.querySelector('.delete-button');
+            deleteButton.onclick = function(event) {
+                event.stopPropagation();
+                socket.emit('delete_message', { message_id: data.message_id }); // Nachricht löschen
+            };
 
             // Event für Antwort-Schaltfläche
             const replyButton = messageElement.querySelector('.reply-button');
@@ -128,6 +140,14 @@
             // Scrollen zum neuesten Element
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
+
+       socket.on('message_deleted', function(data) {
+    const messageId = data.message_id;
+    const messageElement = document.querySelector(`[data-message-id='${messageId}']`);
+    if (messageElement) {
+        messageElement.remove(); // Lösche die Nachricht auf dem Client
+    }
+});
     </script>
 </body>
 </html>
