@@ -1,0 +1,14 @@
+{
+    "sqltools.connections": [{
+        "name": "Antidepressiva DB",
+        "driver": "MySQL",
+        "server": "localhost",
+        "port": 3306,
+        "database": "antidepressiva",
+        "username": "root",
+        "password": "password",
+        "mysqlOptions": {
+            "authProtocol": "default"
+        }
+    }]
+}

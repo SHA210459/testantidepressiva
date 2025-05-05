@@ -1,14 +1,16 @@
-from flask import Blueprint, render_template
+import os
 import mysql.connector
+from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask_login import login_required, current_user
 
-# Blueprint für Tipps erstellen
 tippsbp = Blueprint('tipps', __name__)
 
-# MySQL-Verbindung einrichten
+# Datenbankverbindung
 db = mysql.connector.connect(
-    host="localhost",
-    user="root",  # Dein MySQL-Benutzername
-    database="antidepressiva"  # Dein MySQL-Datenbankname
+    host=os.environ.get('MYSQL_HOST', 'db'),
+    user=os.environ.get('MYSQL_USER', 'root'),
+    password=os.environ.get('MYSQL_PASSWORD', 'password'),
+    database=os.environ.get('MYSQL_DATABASE', 'antidepressiva')
 )
 
 

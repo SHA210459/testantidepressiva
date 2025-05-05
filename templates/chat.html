@@ -41,7 +41,8 @@
         const socket = io();
         const username = "{{ current_user.username }}"; // Benutzernamen von Flask abrufen
         const userColor = "{{ current_user.color }}"; // Benutzerfarbe von Flask abrufen
-
+        const isAdmin = {{ current_user.is_admin() | lower }}; // Gibt true oder false zurück
+        
         const messagesDiv = document.getElementById('messages');
         const messageInput = document.getElementById('message_input');
         const sendButton = document.getElementById('send_button');
@@ -101,7 +102,7 @@
 
             // Profilbildpfad
             const profileImageUrl = data.profile_image && data.profile_image !== "null"
-                ? `static/profile_pics/${data.profile_image}`
+                ? `/static/${data.profile_image}`
                 : '/static/profile_pics/default_profile_image.png'; // Fallback-Bild
 
             messageElement.innerHTML = `
@@ -115,17 +116,19 @@
                 <button class="reply-button btn btn-outline-secondary btn-sm position-absolute end-0 top-50 translate-middle-y me-2">
                     &#8592; Antworten
                 </button>
-             <button class="delete-button btn btn-danger btn-sm position-absolute" style="right: 10px; bottom: 20px; transform: translateY(50%);">
-    &#10060; Löschen
-</button>
+                ${isAdmin ? `<button class="delete-button btn btn-danger btn-sm position-absolute" style="right: 10px; bottom: 20px; transform: translateY(50%);">
+                    &#10060; Löschen
+                </button>` : ''}
             `;
 
-            // Löschen-Button hinzufügen
-            const deleteButton = messageElement.querySelector('.delete-button');
-            deleteButton.onclick = function(event) {
-                event.stopPropagation();
-                socket.emit('delete_message', { message_id: data.message_id }); // Nachricht löschen
-            };
+            // Löschen-Button nur hinzufügen, wenn Admin
+            if (isAdmin) {
+                const deleteButton = messageElement.querySelector('.delete-button');
+                deleteButton.onclick = function(event) {
+                    event.stopPropagation();
+                    socket.emit('delete_message', { message_id: data.message_id });
+                };
+            }
 
             // Event für Antwort-Schaltfläche
             const replyButton = messageElement.querySelector('.reply-button');
@@ -141,13 +144,34 @@
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
 
-       socket.on('message_deleted', function(data) {
-    const messageId = data.message_id;
-    const messageElement = document.querySelector(`[data-message-id='${messageId}']`);
-    if (messageElement) {
-        messageElement.remove(); // Lösche die Nachricht auf dem Client
-    }
-});
+        socket.on('message_deleted', function(data) {
+            const messageId = data.message_id;
+            const messageElement = document.querySelector(`[data-message-id='${messageId}']`);
+            if (messageElement) {
+                messageElement.remove(); // Lösche die Nachricht auf dem Client
+            }
+        });
+
+        // Empfänger für Sperr-Meldungen
+        socket.on('banned_message', function(data) {
+            // Erstelle einen Toast/Alert für die Fehlermeldung
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
+            alertDiv.role = 'alert';
+            alertDiv.innerHTML = `
+                <strong>Gesperrt!</strong> ${data.message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
+            `;
+            
+            // Füge die Meldung zum Container hinzu
+            document.querySelector('.container').appendChild(alertDiv);
+            
+            // Optional: Meldung nach 5 Sekunden automatisch schließen
+            setTimeout(() => {
+                alertDiv.classList.remove('show');
+                setTimeout(() => alertDiv.remove(), 150);
+            }, 5000);
+        });
     </script>
 </body>
 </html>

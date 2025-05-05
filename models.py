@@ -1,3 +1,4 @@
+import os
 import mysql.connector
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
@@ -6,18 +7,20 @@ import datetime
 
 # MySQL Verbindung einrichten
 db = mysql.connector.connect(
-    host="localhost",
-    user="root",  # Dein MySQL-Benutzername
-    database="antidepressiva"  # Dein MySQL-Datenbankname
+    host=os.environ.get('MYSQL_HOST', 'db'),
+    user=os.environ.get('MYSQL_USER', 'root'),
+    password=os.environ.get('MYSQL_PASSWORD', 'password'),
+    database=os.environ.get('MYSQL_DATABASE', 'antidepressiva')
 )
 
 class User(UserMixin):
-    def __init__(self, id, username, color, profile_image=None, role='user'):
+    def __init__(self, id, username, color, profile_image=None, role='user', is_banned=False):
         self.id = id
         self.username = username
         self.color = color
         self.profile_image = profile_image  # Profilbild als Base64-String oder Dateipfad
         self.role = role  # Standardrolle auf 'user' setzen
+        self.is_banned = is_banned
 
     id = Column(Integer, primary_key=True)
     username = Column(String(100), nullable=False, unique=True)
@@ -25,7 +28,29 @@ class User(UserMixin):
     profile_image = Column(Text, default='/static/profile_pics/default_profile_image.png')  # Profilbild in Base64 oder als Dateipfad
     role = Column(String(20), default='user')  # Rolle als neue Spalte
 
+    def is_admin(self):
+        return self.role == 'admin'
 
+    def toggle_ban(self):
+        """Toggle the banned status of the user"""
+        from app import get_db
+        db = get_db()
+        cursor = db.cursor()
+        # Toggle the ban status
+        new_banned_status = not self.is_banned
+        cursor.execute("UPDATE users SET is_banned = %s WHERE id = %s", 
+                      (new_banned_status, self.id))
+        db.commit()
+        cursor.close()
+        
+        # Lokale Instanz aktualisieren
+        self.is_banned = new_banned_status
+        
+        # Neuen Status zurückgeben
+        return new_banned_status
+
+    def is_banned(self):
+        return self.is_banned
 
     def is_muted(self):
         """Prüfen, ob der Benutzer aktuell stummgeschaltet ist."""
@@ -37,21 +62,22 @@ class User(UserMixin):
         """Gibt die Benutzer-ID zurück (für Flask-Login)."""
         return str(self.id)
 
-        # Die get_by_id-Methode anpassen, um die Rolle zu verarbeiten
-
-    @classmethod
-    def get_by_id(cls, user_id):
-        cursor = db.cursor()
+    @staticmethod
+    def get_by_id(user_id):
+        from app import get_db
+        db = get_db()
+        cursor = db.cursor(dictionary=True)
         cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
         user_data = cursor.fetchone()
         cursor.close()
         if user_data:
-            return cls(
-                id=user_data[0],
-                username=user_data[1],
-                color=user_data[3],
-                profile_image=user_data[6],
-                role=user_data[4]
+            return User(
+                id=user_data['id'],
+                username=user_data['username'],
+                color=user_data['color'],
+                profile_image=user_data['profile_image'],
+                role=user_data.get('role', 'user'),
+                is_banned=user_data.get('is_banned', False)
             )
         return None
 
@@ -80,20 +106,46 @@ class User(UserMixin):
         cursor.close()
         print(f"Benutzer mit ID {user_id} wurde bis {muted_until} stummgeschaltet.")
 
-    def update_profile(user_id, username, color, password, profile_image):
+    @staticmethod
+    def update_profile(user_id, username, color, password=None, profile_image=None):
+        """Aktualisiert das Benutzerprofil"""
+        from app import get_db
+        db = get_db()
         cursor = db.cursor()
-        update_query = "UPDATE users SET username = %s, color = %s, profile_image = %s"
-
-        # Falls ein Passwort angegeben wurde, das Passwort auch aktualisieren
-        if password:
-            hashed_password = generate_password_hash(password)
-            update_query += ", password = %s"
-            cursor.execute(update_query + " WHERE id = %s", (username, color, profile_image, hashed_password, user_id))
-        else:
-            cursor.execute(update_query + " WHERE id = %s", (username, color, profile_image, user_id))
-
+        
+        # Grundlegende Update-Abfrage
+        query = "UPDATE users SET username = %s, color = %s"
+        params = [username, color]
+        
+        # Wenn ein neues Passwort gesetzt werden soll
+        if password and password.strip():
+            hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+            query += ", password = %s"
+            params.append(hashed_password)
+        
+        # Wenn ein neues Profilbild gesetzt werden soll
+        if profile_image:
+            query += ", profile_image = %s"
+            params.append(profile_image)
+        
+        # WHERE-Klausel hinzufügen
+        query += " WHERE id = %s"
+        params.append(user_id)
+        
+        cursor.execute(query, tuple(params))
         db.commit()
         cursor.close()
+        return True
+
+def get_db():
+    """Establish and return a database connection."""
+    return mysql.connector.connect(
+        host=os.environ.get('MYSQL_HOST', 'db'),
+        user=os.environ.get('MYSQL_USER', 'root'),
+        password=os.environ.get('MYSQL_PASSWORD', 'password'),
+        database=os.environ.get('MYSQL_DATABASE', 'antidepressiva')
+    )
+
 # Tabellen für Benutzer erstellen
 def create_tables():
     cursor = db.cursor()

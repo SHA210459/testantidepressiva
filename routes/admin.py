@@ -1,18 +1,29 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from flask_login import login_required, current_user
-from models import db
+from models import db, User
 
 admin_bp = Blueprint('admin', __name__)
+
+def is_admin(self):
+    # Robuste Implementierung
+    try:
+        return self.role == 'admin'
+    except AttributeError:
+        return False
 
 # Admin-Dashboard anzeigen (für alle eingeloggten Nutzer)
 @admin_bp.route('/')
 @login_required
 def dashboard():
+    if not current_user.is_admin():
+        flash('Keine Berechtigung für den Admin-Bereich!', 'error')
+        return redirect(url_for('main.home'))
+        
     cursor = db.cursor(dictionary=True)
     cursor.execute("SELECT id, username, role, is_banned FROM users")
     users = cursor.fetchall()
     cursor.close()
-    return render_template('admin_dashboard.html', users=users)
+    return render_template('admin_dashboard.html', users=users, isAdmin=current_user.is_admin())
 
 # Benutzername ändern (nur Admin)
 @admin_bp.route('/change_username/<int:user_id>', methods=['POST'])
@@ -34,11 +45,23 @@ def change_username(user_id):
 @admin_bp.route('/change_role/<int:user_id>', methods=['POST'])
 @login_required
 def change_role(user_id):
-    if current_user.role != 'admin':
+    if not current_user.is_admin():
         flash('Keine Berechtigung!', 'error')
         return redirect(url_for('admin.dashboard'))
 
     new_role = request.form['role']
+    
+    # Prüfen, ob der letzte Admin entfernt werden würde
+    if new_role != 'admin' and current_user.id == user_id:
+        cursor = db.cursor()
+        cursor.execute("SELECT COUNT(*) FROM users WHERE role = 'admin'")
+        admin_count = cursor.fetchone()[0]
+        cursor.close()
+        
+        if admin_count <= 1:
+            flash('Der letzte Admin kann nicht entfernt werden!', 'error')
+            return redirect(url_for('admin.dashboard'))
+    
     cursor = db.cursor()
     cursor.execute("UPDATE users SET role = %s WHERE id = %s", (new_role, user_id))
     db.commit()
@@ -50,16 +73,28 @@ def change_role(user_id):
 @admin_bp.route('/toggle_ban/<int:user_id>', methods=['POST'])
 @login_required
 def toggle_ban(user_id):
-    if current_user.role != 'admin':
-        flash('Keine Berechtigung!', 'error')
-        return redirect(url_for('admin.dashboard'))
-
-    ban_status = request.form.get('is_banned') == 'true'
-    cursor = db.cursor()
-    cursor.execute("UPDATE users SET is_banned = %s WHERE id = %s", (ban_status, user_id))
-    db.commit()
+    if not current_user.is_admin():
+        flash('Keine Berechtigung', 'error')
+        return redirect(url_for('main.home'))
+    
+    # Direkter Datenbankzugriff statt User.get_by_id
+    cursor = db.cursor(dictionary=True)
+    
+    # Prüfe aktuellen Status
+    cursor.execute("SELECT username, is_banned FROM users WHERE id = %s", (user_id,))
+    user_data = cursor.fetchone()
+    
+    if user_data:
+        # Umkehren des is_banned-Status
+        new_status = not user_data['is_banned']
+        cursor.execute("UPDATE users SET is_banned = %s WHERE id = %s", (new_status, user_id))
+        db.commit()
+        
+        # Erfolgsmeldung
+        status_text = "gesperrt" if new_status else "entsperrt"
+        flash(f'Benutzer {user_data["username"]} wurde {status_text}', 'success')
+    
     cursor.close()
-    flash('Benutzerstatus aktualisiert.', 'success')
     return redirect(url_for('admin.dashboard'))
 
 # Benutzer löschen (nur Admin)

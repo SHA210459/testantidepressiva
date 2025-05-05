@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.env
+.git/
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.idea/
+*.log
+static/profile_pics/*
+!static/profile_pics/default_profile_image.png

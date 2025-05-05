@@ -17,7 +17,7 @@ from models import User
 # Flask-Anwendung erstellen
 app = Flask(__name__)
 app.secret_key = secrets.token_hex(16)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+mysqlconnector://root:@localhost/antidepressiva'
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI')
 
 # Flask-Login Konfiguration
 login_manager = LoginManager()
@@ -30,9 +30,10 @@ login_manager.login_message_category = "info"
 def get_db():
     if 'db' not in g:
         g.db = mysql.connector.connect(
-            host="localhost",
-            user="root",
-            database="antidepressiva"
+            host=os.environ.get('MYSQL_HOST', 'db'),
+            user=os.environ.get('MYSQL_USER', 'root'),
+            password=os.environ.get('MYSQL_PASSWORD', 'password'),
+            database=os.environ.get('MYSQL_DATABASE', 'antidepressiva')
         )
     return g.db
 
@@ -45,14 +46,19 @@ def teardown_db(exception):
 @login_manager.user_loader
 def load_user(user_id):
     db = get_db()
-    cursor = db.cursor()
+    cursor = db.cursor(dictionary=True)
     cursor.execute("SELECT * FROM users WHERE id = %s", (user_id,))
     user_data = cursor.fetchone()
     cursor.close()
     if user_data:
-        # Wenn Profilbild vorhanden, wird es geladen
-        profile_image = user_data[4] if user_data[4] else "default_profile_image.jpg"
-        return User(id=user_data[0], username=user_data[1], color=user_data[3], profile_image=profile_image)
+        return User(
+            id=user_data['id'],
+            username=user_data['username'],
+            color=user_data['color'],
+            profile_image=user_data.get('profile_image'),
+            role=user_data.get('role', 'user'),
+            is_banned=user_data.get('is_banned', False)
+        )
     return None
 
 # Blueprints registrieren

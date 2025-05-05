@@ -12,26 +12,34 @@ def login():
         password = request.form['password']
 
         # Benutzer aus der Datenbank abrufen
-        cursor = db.cursor()
+        cursor = db.cursor(dictionary=True)  # Dictionary-Cursor verwenden
         cursor.execute("SELECT * FROM users WHERE username = %s", (username,))
         user_data = cursor.fetchone()
         cursor.close()
 
         # Überprüfen, ob der Benutzer existiert und das Passwort stimmt
-        if user_data and check_password_hash(user_data[2], password):
-            user = User(
-                id=user_data[0],
-                username=user_data[1],
-                color=user_data[3],
-                profile_image=user_data[6],
-                role=user_data[4]  # Index 4 ist die 'role'-Spalte
-            )
-            login_user(user)
-            return redirect(url_for('main.home'))
-        else:
-            flash('Ungültiger Benutzername oder Passwort', 'error')
+        if user_data:
+            try:
+                if check_password_hash(user_data['password'], password):
+                    user = User(
+                        id=user_data['id'],
+                        username=user_data['username'],
+                        color=user_data['color'],
+                        profile_image=user_data.get('profile_image'),
+                        role=user_data.get('role', 'user'),
+                        is_banned=user_data.get('is_banned', False)
+                    )
+                    login_user(user)
+                    return redirect(url_for('main.home'))
+            except ValueError as e:
+                # Für bestehende Benutzer mit falschem Hash-Format
+                flash('Ein Problem mit deinem Passwort ist aufgetreten. Bitte setze es zurück.', 'error')
+                print(f"Hash-Fehler: {e}")
+        
+        flash('Ungültiger Benutzername oder Passwort', 'error')
 
     return render_template("login.html")
+
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
@@ -50,7 +58,7 @@ def register():
             return redirect(url_for('auth.register'))
 
         # Passwort hashen
-        hashed_password = generate_password_hash(password)
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
         profile_image = 'static/profile_images/default_profile_image.png'  # Standardbild
 
         # Rolle basierend auf dem Benutzernamen festlegen
