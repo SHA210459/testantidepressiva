@@ -5,30 +5,79 @@
     <title>Chat Room</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
 
-    <!-- Bootstrap CSS für allgemeines Styling -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-
-    <!-- Link zu allgemeinem Custom CSS -->
     <link rel="stylesheet" href="/static/css/chat.css">
-
     <link rel="stylesheet" href="/static/css/header.css">
+
+    <style>
+        .reaction-btn {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+
+        .reaction-display {
+            margin-top: 5px;
+            font-size: 16px;
+        }
+
+        .message {
+            position: relative;
+            animation: fadeSlideIn 0.3s ease-in-out;
+        }
+
+        .reaction-icon-trigger {
+            display: none;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        .message:hover .reaction-icon-trigger {
+            display: inline;
+        }
+
+        .reaction-menu {
+            display: none;
+            position: absolute;
+            top: 35px;
+            left: 10px;
+            background: #fff;
+            border: 1px solid #ccc;
+            padding: 5px 8px;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            z-index: 10;
+        }
+
+        @keyframes fadeSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
 </head>
 <body>
-    <!-- Include Header hier -->
     {% include 'header.html' %}
-
     <h1 class="text-center">Chatroom</h1>
+
     <div class="container mt-5">
-        <!-- Nachrichtenbereich -->
         <div id="messages" class="mb-4"></div>
 
-        <!-- Antworthinweis (über der Eingabebox) -->
         <div id="reply_info" class="mb-2 p-2 rounded bg-light border d-none">
             <span id="reply_text" class="text-muted"></span>
             <button onclick="clearReply()" class="btn-close float-end" aria-label="Schließen"></button>
         </div>
 
-        <!-- Eingabebereich -->
         <div class="input-group">
             <input id="message_input" type="text" placeholder="Nachricht eingeben..." autocomplete="off" class="form-control">
             <button id="send_button" class="btn btn-primary">Senden</button>
@@ -39,10 +88,10 @@
 
     <script>
         const socket = io();
-        const username = "{{ current_user.username }}"; // Benutzernamen von Flask abrufen
-        const userColor = "{{ current_user.color }}"; // Benutzerfarbe von Flask abrufen
-        const isAdmin = {{ current_user.is_admin() | lower }}; // Gibt true oder false zurück
-        
+        const username = "{{ current_user.username }}";
+        const userColor = "{{ current_user.color }}";
+        const isAdmin = {{ current_user.is_admin() | lower }};
+
         const messagesDiv = document.getElementById('messages');
         const messageInput = document.getElementById('message_input');
         const sendButton = document.getElementById('send_button');
@@ -50,30 +99,23 @@
         const replyText = document.getElementById('reply_text');
         const popupMenu = document.getElementById('popupMenu');
 
-        let replyingTo = null; // Antwort auf eine Nachricht
+        let replyingTo = null;
 
-        // Nachricht senden
         function sendMessage() {
             const message = messageInput.value;
-
             if (message) {
                 socket.emit('send_message', {
                     msg: message,
                     username: username,
-                    color: userColor, // Benutzerfarbe wird verwendet
-                    replyTo: replyingTo // Antwort hinzufügen
+                    color: userColor,
+                    replyTo: replyingTo
                 });
-
-                // Antwort zurücksetzen
                 clearReply();
                 messageInput.value = '';
             }
         }
 
-        sendButton.onclick = function() {
-            sendMessage();
-        };
-
+        sendButton.onclick = sendMessage;
         messageInput.addEventListener('keypress', function(event) {
             if (event.key === 'Enter') {
                 event.preventDefault();
@@ -81,29 +123,25 @@
             }
         });
 
-        // Antwort setzen
         function setReplyToMessage(messageText) {
             replyingTo = messageText;
             replyText.textContent = `Antwort auf: "${messageText}"`;
-            replyInfo.classList.remove('d-none'); // Antworthinweis anzeigen
+            replyInfo.classList.remove('d-none');
         }
 
-        // Antwort löschen
         function clearReply() {
             replyingTo = null;
-            replyInfo.classList.add('d-none'); // Antworthinweis verstecken
+            replyInfo.classList.add('d-none');
         }
 
-        // Nachricht empfangen
         socket.on('receive_message', function(data) {
             const messageElement = document.createElement('div');
             messageElement.classList.add('message', 'position-relative', 'mb-3', 'p-2', 'rounded', 'shadow-sm', 'bg-light');
-            messageElement.setAttribute('data-message-id', data.message_id); // Setze eine ID für die Nachricht
+            messageElement.setAttribute('data-message-id', data.message_id);
 
-            // Profilbildpfad
             const profileImageUrl = data.profile_image && data.profile_image !== "null"
                 ? `/static/${data.profile_image}`
-                : '/static/profile_pics/default_profile_image.png'; // Fallback-Bild
+                : '/static/profile_pics/default_profile_image.png';
 
             messageElement.innerHTML = `
                 <div class="profile-container d-flex align-items-center mb-2">
@@ -113,15 +151,19 @@
                 ${data.replyTo ? `<div class="reply text-muted mb-2">Antwort auf: ${data.replyTo}</div>` : ''}
                 <p class="message-text mb-2">${data.msg}</p>
                 <span class="time text-muted small">${data.time}</span>
-                <button class="reply-button btn btn-outline-secondary btn-sm position-absolute end-0 top-50 translate-middle-y me-2">
-                    &#8592; Antworten
-                </button>
-                ${isAdmin ? `<button class="delete-button btn btn-danger btn-sm position-absolute" style="right: 10px; bottom: 20px; transform: translateY(50%);">
-                    &#10060; Löschen
-                </button>` : ''}
+                <button class="reply-button btn btn-outline-secondary btn-sm position-absolute end-0 top-50 translate-middle-y me-2">&#8592; Antworten</button>
+                ${isAdmin ? `<button class="delete-button btn btn-danger btn-sm position-absolute" style="right: 10px; bottom: 20px; transform: translateY(50%);">&#10060; Löschen</button>` : ''}
+
+                <div class="reaction-icon-trigger" onclick="toggleReactionMenu('${data.message_id}')">💬</div>
+                <div class="reaction-menu" id="reaction-menu-${data.message_id}">
+                    <button class="reaction-btn" onclick="addReaction(this, '${data.message_id}', '😭')">😭</button>
+                    <button class="reaction-btn" onclick="addReaction(this, '${data.message_id}', '😄')">😄</button>
+                    <button class="reaction-btn" onclick="addReaction(this, '${data.message_id}', '☠')">☠</button>
+                    <button class="reaction-btn" onclick="addReaction(this, '${data.message_id}', '🙏')">🙏</button>
+                </div>
+                <div class="reaction-display" id="reactions-${data.message_id}"></div>
             `;
 
-            // Löschen-Button nur hinzufügen, wenn Admin
             if (isAdmin) {
                 const deleteButton = messageElement.querySelector('.delete-button');
                 deleteButton.onclick = function(event) {
@@ -130,17 +172,13 @@
                 };
             }
 
-            // Event für Antwort-Schaltfläche
             const replyButton = messageElement.querySelector('.reply-button');
             replyButton.onclick = function(event) {
                 event.stopPropagation();
                 setReplyToMessage(data.msg);
             };
 
-            // Nachricht anhängen
             messagesDiv.appendChild(messageElement);
-
-            // Scrollen zum neuesten Element
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
         });
 
@@ -148,13 +186,11 @@
             const messageId = data.message_id;
             const messageElement = document.querySelector(`[data-message-id='${messageId}']`);
             if (messageElement) {
-                messageElement.remove(); // Lösche die Nachricht auf dem Client
+                messageElement.remove();
             }
         });
 
-        // Empfänger für Sperr-Meldungen
         socket.on('banned_message', function(data) {
-            // Erstelle einen Toast/Alert für die Fehlermeldung
             const alertDiv = document.createElement('div');
             alertDiv.className = 'alert alert-danger alert-dismissible fade show mt-3';
             alertDiv.role = 'alert';
@@ -162,16 +198,54 @@
                 <strong>Gesperrt!</strong> ${data.message}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Schließen"></button>
             `;
-            
-            // Füge die Meldung zum Container hinzu
             document.querySelector('.container').appendChild(alertDiv);
-            
-            // Optional: Meldung nach 5 Sekunden automatisch schließen
             setTimeout(() => {
                 alertDiv.classList.remove('show');
                 setTimeout(() => alertDiv.remove(), 150);
             }, 5000);
         });
+
+        const userReactions = new Set();
+
+        function toggleReactionMenu(messageId) {
+            const menu = document.getElementById('reaction-menu-' + messageId);
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+
+        function addReaction(button, messageId, emoji) {
+            const key = `${messageId}:${emoji}`;
+            const container = document.getElementById('reactions-' + messageId);
+            let span = container.querySelector("span[data-emoji='" + emoji + "']");
+
+            if (userReactions.has(key)) {
+                userReactions.delete(key);
+                if (span) {
+                    let count = parseInt(span.getAttribute('data-count')) - 1;
+                    if (count > 0) {
+                        span.setAttribute('data-count', count);
+                        span.innerText = emoji + ' ' + count;
+                    } else {
+                        span.remove();
+                    }
+                }
+            } else {
+                userReactions.add(key);
+                if (span) {
+                    let count = parseInt(span.getAttribute('data-count')) + 1;
+                    span.setAttribute('data-count', count);
+                    span.innerText = emoji + ' ' + count;
+                } else {
+                    span = document.createElement('span');
+                    span.setAttribute('data-emoji', emoji);
+                    span.setAttribute('data-count', 1);
+                    span.style.marginRight = '10px';
+                    span.innerText = emoji + ' 1';
+                    container.appendChild(span);
+                }
+            }
+
+            toggleReactionMenu(messageId);
+        }
     </script>
 </body>
 </html>

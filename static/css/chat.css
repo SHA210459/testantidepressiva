@@ -203,3 +203,16 @@ h2 {
     object-fit: cover;
     background-color: #f0f0f0;
 }
+
+.reaction-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+.reaction-display {
+    margin-top: 5px;
+    font-size: 16px;
+}
