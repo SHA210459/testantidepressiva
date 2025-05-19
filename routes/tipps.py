@@ -9,7 +9,7 @@ tippsbp = Blueprint('tipps', __name__)
 db = mysql.connector.connect(
     host=os.environ.get('MYSQL_HOST', 'db'),
     user=os.environ.get('MYSQL_USER', 'root'),
-    password=os.environ.get('MYSQL_PASSWORD', 'password'),
+    password=os.environ.get('MYSQL_PASSWORD', 'Rootroot1'),
     database=os.environ.get('MYSQL_DATABASE', 'antidepressiva')
 )
 

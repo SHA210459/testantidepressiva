@@ -29,10 +29,14 @@
                     <li class="nav-item">
                         <a class="nav-link text-white" href="{{ url_for('tipps.show_tipps') }}">Tipps</a> <!-- Link zu tipps.html -->
                     </li>
-
                     <li class="nav-item">
-                    <a class="nav-link text-white" href="{{ url_for('about_us.about_us') }}">About Us</a>
+                        <a class="nav-link text-white" href="{{ url_for('about_us.about_us') }}">About Us</a>
                     </li>
+                    {% if current_user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{{ url_for('private_chats') }}">Privat Chats</a>
+                    </li>
+                    {% endif %}
                     <li class="nav-item">
                         <a class="nav-link text-white" href="{{ url_for('profile.profile') }}">Profil</a>
                     </li>
@@ -53,6 +57,4 @@
 
 
 </body>
-
-
 </html>

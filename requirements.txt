@@ -1,8 +1,10 @@
-flask
-flask-socketio
-flask-login
-mysql-connector-python
-Werkzeug
+flask~=3.1.0
+flask-socketio~=5.5.1
+flask-login~=0.6.3
+mysql-connector-python~=9.2.0
+Werkzeug~=3.1.3
 python-dotenv
-SQLAlchemy
+SQLAlchemy~=2.0.39
 Flask-SQLAlchemy
+mysql~=0.0.3
+selenium~=4.32.0
