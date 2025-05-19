@@ -13,7 +13,7 @@ DEALLOCATE PREPARE stmt;
 -- Benutzer zum Admin machen
 UPDATE users 
 SET role = 'admin' 
-WHERE username = 'sha210459';
+WHERE username = 'fff';
 
 -- Prüfen ob es funktioniert hat
 SELECT username, role FROM users;

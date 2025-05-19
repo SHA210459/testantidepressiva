@@ -16,8 +16,8 @@ def test_login_and_profile_edit():
         WebDriverWait(driver, 10).until(
             EC.presence_of_element_located((By.NAME, "username"))
         )
-        driver.find_element(By.NAME, "username").send_keys("aaa")
-        driver.find_element(By.NAME, "password").send_keys("aaa")
+        driver.find_element(By.NAME, "username").send_keys("fff")
+        driver.find_element(By.NAME, "password").send_keys("fff")
         driver.find_element(By.CSS_SELECTOR, "button[type='submit']").click()
 
         # 3. Warten, bis Login abgeschlossen (URL enthält /home)
