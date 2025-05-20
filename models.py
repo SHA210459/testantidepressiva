@@ -183,6 +183,7 @@ def create_tips_table():
     print("Tabelle 'tipps' wurde erfolgreich erstellt.")
 
 
+# Update the create_chat_tables function to include is_formatted column
 def create_chat_tables():
     cursor = db.cursor()
 
@@ -193,6 +194,7 @@ def create_chat_tables():
         sender_id INT NOT NULL,
         receiver_id INT NOT NULL,
         message TEXT NOT NULL,
+        is_formatted BOOLEAN DEFAULT FALSE,
         timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         is_read BOOLEAN DEFAULT FALSE,
         FOREIGN KEY (sender_id) REFERENCES users(id),
@@ -232,11 +234,11 @@ class PrivateMessage:
         self.is_read = is_read
 
     @staticmethod
-    def send_message(sender_id, receiver_id, message):
+    def send_message(sender_id, receiver_id, message, formatted=False):
         cursor = db.cursor()
         cursor.execute(
-            "INSERT INTO private_messages (sender_id, receiver_id, message) VALUES (%s, %s, %s)",
-            (sender_id, receiver_id, message)
+            "INSERT INTO private_messages (sender_id, receiver_id, message, is_formatted) VALUES (%s, %s, %s, %s)",
+            (sender_id, receiver_id, message, formatted)
         )
         db.commit()
         message_id = cursor.lastrowid

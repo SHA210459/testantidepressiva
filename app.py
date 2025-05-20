@@ -1,8 +1,7 @@
 import os
-
 from flask import Flask, redirect, url_for, render_template, g
 from flask_login import LoginManager, login_required, current_user
-from extensions import socketio
+from extensions import socketio  # Importiere socketio von extensions.py
 from routes.about_us import about_us_bp
 from routes.admin import admin_bp
 from routes.chat import chat_bp
@@ -13,6 +12,7 @@ from routes.tipps import tippsbp
 import mysql.connector
 import secrets
 from models import User
+
 
 # Flask-Anwendung erstellen
 app = Flask(__name__)
@@ -25,6 +25,9 @@ login_manager.init_app(app)
 login_manager.login_view = 'auth.login'
 login_manager.login_message = "Bitte logge dich ein, um fortzufahren."
 login_manager.login_message_category = "info"
+
+# SocketIO mit der App verbinden
+socketio.init_app(app)
 
 
 # Datenbankverbindung pro Anfrage
@@ -73,9 +76,6 @@ app.register_blueprint(profile_bp, url_prefix='/profile')
 app.register_blueprint(tippsbp, url_prefix='/tipps')
 app.register_blueprint(about_us_bp, url_prefix='/about')
 app.register_blueprint(admin_bp, url_prefix='/admin')
-
-# SocketIO initialisieren
-socketio.init_app(app, cors_allowed_origins="*")
 
 
 # Fehlerbehandlung
@@ -131,3 +131,64 @@ def private_chats():
     cursor.close()
 
     return render_template('private_chats.html', chat_partners=chat_partners)
+
+
+def init_db():
+    """Initialisiert die Datenbank beim ersten Start"""
+    db = get_db()
+    cursor = db.cursor()
+    
+    # SQL-Datei lesen und ausführen
+    with open('init_db.sql', 'r') as f:
+        sql_commands = f.read().split(';')
+        for command in sql_commands:
+            if command.strip():
+                try:
+                    cursor.execute(command)
+                except Exception as e:
+                    print(f"Fehler beim Ausführen von SQL: {e}")
+    
+    db.commit()
+    cursor.close()
+
+
+# In app.py oder in einem Setup-Skript
+def create_tables():
+    db = get_db()
+    cursor = db.cursor()
+    
+    # Tabelle für private Nachrichten erstellen
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS private_messages (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        sender_id INT NOT NULL,
+        receiver_id INT NOT NULL,
+        content TEXT NOT NULL,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        is_read BOOLEAN DEFAULT FALSE,
+        FOREIGN KEY (sender_id) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (receiver_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+    """)
+    
+    # Tabelle für Reaktionen erstellen
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS message_reactions (
+        id INT AUTO_INCREMENT PRIMARY KEY,
+        message_id INT NOT NULL,
+        user_id INT NOT NULL,
+        emoji VARCHAR(10) NOT NULL,
+        count INT DEFAULT 1,
+        timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+    )
+    """)
+    
+    db.commit()
+    cursor.close()
+
+# Statt direkt create_tables() aufzurufen
+if __name__ == '__main__':
+    with app.app_context():
+        # Tabellen erstellen
+        create_tables()

@@ -6,10 +6,10 @@
     <title>Private Chats</title>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome für Icons -->
+    <!-- Font Awesome f체r Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Eigenes CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <style>
         .chat-container {
             max-width: 1200px;
@@ -90,6 +90,62 @@
             justify-content: center;
             margin-left: auto;
         }
+        .color-swatch {
+            width: 25px;
+            height: 25px;
+            margin: 2px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .emoji-picker {
+            position: absolute;
+            bottom: 60px;
+            background-color: white;
+            border: 1px solid #e9ecef;
+            border-radius: 5px;
+            padding: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        
+        .emoji-container {
+            display: flex;
+            flex-wrap: wrap;
+            max-width: 300px;
+        }
+        
+        .emoji {
+            font-size: 20px;
+            padding: 5px;
+            cursor: pointer;
+        }
+        
+        .emoji:hover {
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+        
+        .message-reactions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+            margin-top: 5px;
+        }
+        
+        .reaction {
+            background-color: #e9ecef;
+            border-radius: 15px;
+            padding: 2px 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .formatted-message img.emoji {
+            height: 1.2em;
+            width: 1.2em;
+            margin: 0 .05em 0 .1em;
+            vertical-align: -0.1em;
+        }
     </style>
 </head>
 <body>
@@ -109,9 +165,10 @@
 
                     {% for partner in chat_partners %}
                     <div class="chat-item d-flex align-items-center" data-partner-id="{{ partner.id }}" data-username="{{ partner.username }}">
-                        <img src="{{ partner.profile_image if partner.profile_image else url_for('static', filename='img/default-profile.png') }}"
+                        <img src="{{ url_for('static', filename=partner.profile_image) }}" 
                              class="user-avatar"
-                             alt="{{ partner.username }}">
+                             alt="{{ partner.username }}"
+                             onerror="this.src='{{ url_for('static', filename='profile_pics/default_profile_image.png') }}'">
                         <div class="d-flex flex-grow-1 align-items-center">
                             <div>
                                 <h6 class="mb-1">{{ partner.username }}</h6>
@@ -132,8 +189,8 @@
                 <div class="col-md-8 chat-messages">
                     <div class="text-center text-muted p-5" id="no-chat-selected">
                         <i class="fas fa-comment-dots fa-3x mb-3"></i>
-                        <h4>Wähle einen Chat aus</h4>
-                        <p>Wähle einen Kontakt aus, um die Nachrichten anzuzeigen</p>
+                        <h4>W채hle einen Chat aus</h4>
+                        <p>W채hle einen Kontakt aus, um die Nachrichten anzuzeigen</p>
                     </div>
 
                     <div id="chat-display" class="d-none">
@@ -147,16 +204,61 @@
                             </button>
                         </div>
                         <div class="messages-content" style="height: 450px; overflow-y: auto; padding: 15px;" id="messages-container">
-                            <!-- Nachrichten werden hier dynamisch eingefügt -->
+                            <!-- Nachrichten werden hier dynamisch eingef체gt -->
                         </div>
                     </div>
 
                     <div class="message-input d-none" id="message-input-area">
+                        <div class="formatting-controls mb-2">
+                            <button class="btn btn-sm btn-outline-secondary" onclick="formatText('bold')">
+                                <i class="fas fa-bold"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="formatText('italic')">
+                                <i class="fas fa-italic"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="formatText('underline')">
+                                <i class="fas fa-underline"></i>
+                            </button>
+                            <div class="btn-group">
+                                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                                    <i class="fas fa-palette"></i>
+                                </button>
+                                <div class="dropdown-menu p-2 color-picker">
+                                    <div class="d-flex flex-wrap" style="width: 150px;">
+                                        <div class="color-swatch" style="background-color: #000000;" onclick="setTextColor('#000000')"></div>
+                                        <div class="color-swatch" style="background-color: #ff0000;" onclick="setTextColor('#ff0000')"></div>
+                                        <div class="color-swatch" style="background-color: #0000ff;" onclick="setTextColor('#0000ff')"></div>
+                                        <div class="color-swatch" style="background-color: #008000;" onclick="setTextColor('#008000')"></div>
+                                        <div class="color-swatch" style="background-color: #ffa500;" onclick="setTextColor('#ffa500')"></div>
+                                        <div class="color-swatch" style="background-color: #800080;" onclick="setTextColor('#800080')"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <button class="btn btn-sm btn-outline-secondary" onclick="showEmojiPicker()">
+                                <i class="far fa-smile"></i>
+                            </button>
+                        </div>
                         <div class="input-group">
                             <input type="text" class="form-control" placeholder="Nachricht schreiben..." id="message-input">
                             <button class="btn btn-primary" type="button" id="send-button">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
+                        </div>
+                        <div id="emoji-picker" class="emoji-picker d-none">
+                            <div class="emoji-container">
+                                <span class="emoji" onclick="insertEmoji('�삃')">�삃</span>
+                                <span class="emoji" onclick="insertEmoji('�쁻')">�쁻</span>
+                                <span class="emoji" onclick="insertEmoji('�ㅿ툘')">�ㅿ툘</span>
+                                <span class="emoji" onclick="insertEmoji('�몟')">�몟</span>
+                                <span class="emoji" onclick="insertEmoji('�럦')">�럦</span>
+                                <span class="emoji" onclick="insertEmoji('�뵦')">�뵦</span>
+                                <span class="emoji" onclick="insertEmoji('�삆')">�삆</span>
+                                <span class="emoji" onclick="insertEmoji('�쨺')">�쨺</span>
+                                <span class="emoji" onclick="insertEmoji('�삟')">�삟</span>
+                                <span class="emoji" onclick="insertEmoji('�솋')">�솋</span>
+                                <span class="emoji" onclick="insertEmoji('��')">��</span>
+                                <span class="emoji" onclick="insertEmoji('�뙶')">�뙶</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -169,11 +271,53 @@
     <!-- Socket.io -->
     <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
     <script>
+        const socket = io();
+        socket.on('connect', function() {
+          console.log('Socket.IO verbunden!');
+        });
+
+        socket.on('connect_error', function(error) {
+          console.error('Socket.IO Verbindungsfehler:', error);
+        });
+
         document.addEventListener('DOMContentLoaded', function() {
-            const socket = io();
             let currentPartnerId = null;
             let currentPartnerUsername = null;
             let currentPartnerAvatar = null;
+
+            // Automatisch Chat ausw채hlen, wenn Partner-ID vorhanden ist
+            const urlParams = new URLSearchParams(window.location.search);
+            const partnerIdParam = urlParams.get('partner_id');
+            if (partnerIdParam) {
+                // Partner-Element suchen und Klick simulieren
+                const partnerItem = document.querySelector(`.chat-item[data-partner-id="${partnerIdParam}"]`);
+                if (partnerItem) {
+                    partnerItem.click();
+                } else {
+                    // Wenn Partner nicht in der Liste ist, aber 체ber URL aufgerufen wurde
+                    fetch(`/chat/get_user/${partnerIdParam}`)
+                        .then(response => response.json())
+                        .then(partner => {
+                            currentPartnerId = partner.id;
+                            currentPartnerUsername = partner.username;
+                            currentPartnerAvatar = partner.profile_image || '/static/profile_pics/default_profile_image.png';
+                            
+                            // Chat anzeigen
+                            document.getElementById('no-chat-selected').classList.add('d-none');
+                            document.getElementById('chat-display').classList.remove('d-none');
+                            document.getElementById('message-input-area').classList.remove('d-none');
+
+                            document.getElementById('current-partner-name').textContent = currentPartnerUsername;
+                            document.getElementById('current-partner-avatar').src = 
+    currentPartnerAvatar.includes('/static/') ? 
+    currentPartnerAvatar : 
+    `/static/${currentPartnerAvatar}`.replace('/static/static/', '/static/');
+                            
+                            // Nachrichten laden
+                            loadMessages(currentPartnerId);
+                        });
+                }
+            }
 
             // Chat-Suche
             document.getElementById('chat-search').addEventListener('input', function(e) {
@@ -188,7 +332,7 @@
                 });
             });
 
-            // Chat-Partner auswählen
+            // Chat-Partner ausw채hlen
             document.querySelectorAll('.chat-item').forEach(item => {
                 item.addEventListener('click', function() {
                     currentPartnerId = this.dataset.partnerId;
@@ -206,42 +350,134 @@
 
                     document.getElementById('current-partner-name').textContent = currentPartnerUsername;
                     document.getElementById('current-partner-avatar').src = currentPartnerAvatar;
+if (currentPartnerAvatar) {
+    // URL korrigieren - doppelte Static-Pfade entfernen
+    let fixedUrl = currentPartnerAvatar;
+    if (fixedUrl.includes('http://localhost:5000/static/')) {
+        // Entferne den doppelten URL-Teil
+        fixedUrl = fixedUrl.replace('http://localhost:5000/static/', '/static/');
+    } else if (!fixedUrl.startsWith('/static/') && !fixedUrl.startsWith('http')) {
+        // Füge /static/ hinzu, wenn es fehlt und keine vollständige URL ist
+        fixedUrl = '/static/' + fixedUrl;
+    }
+    document.getElementById('current-partner-avatar').src = fixedUrl;
+}
 
                     // Nachrichten laden
                     loadMessages(currentPartnerId);
 
-                    // Ungelesene Nachrichten zurücksetzen
+                    // Ungelesene Nachrichten zur체cksetzen
                     const unreadBadge = this.querySelector('.unread-badge');
                     unreadBadge.classList.add('d-none');
                     unreadBadge.textContent = '0';
                 });
             });
 
+            // Textformatierungsfunktionen
+            function formatText(style) {
+                const input = document.getElementById('message-input');
+                const selectedText = getSelectedText(input);
+                let replacement = '';
+                
+                if (selectedText) {
+                    switch (style) {
+                        case 'bold':
+                            replacement = `<strong>${selectedText}</strong>`;
+                            break;
+                        case 'italic':
+                            replacement = `<em>${selectedText}</em>`;
+                            break;
+                        case 'underline':
+                            replacement = `<u>${selectedText}</u>`;
+                            break;
+                    }
+                    
+                    replaceSelectedText(input, replacement);
+                }
+            }
+            
+            function setTextColor(color) {
+                const input = document.getElementById('message-input');
+                const selectedText = getSelectedText(input);
+                
+                if (selectedText) {
+                    const replacement = `<span style="color:${color}">${selectedText}</span>`;
+                    replaceSelectedText(input, replacement);
+                }
+            }
+            
+            function getSelectedText(input) {
+                if (input.selectionStart !== undefined) {
+                    return input.value.substring(input.selectionStart, input.selectionEnd);
+                }
+                return '';
+            }
+            
+            function replaceSelectedText(input, replacement) {
+                if (input.selectionStart !== undefined) {
+                    const startPos = input.selectionStart;
+                    const endPos = input.selectionEnd;
+                    input.value = input.value.substring(0, startPos) + replacement + input.value.substring(endPos);
+                    input.focus();
+                    input.selectionStart = startPos + replacement.length;
+                    input.selectionEnd = startPos + replacement.length;
+                }
+            }
+            
+            function showEmojiPicker() {
+                const emojiPicker = document.getElementById('emoji-picker');
+                emojiPicker.classList.toggle('d-none');
+            }
+            
+            function insertEmoji(emoji) {
+                const input = document.getElementById('message-input');
+                const startPos = input.selectionStart || 0;
+                input.value = input.value.substring(0, startPos) + emoji + input.value.substring(startPos);
+                input.focus();
+                input.selectionStart = startPos + emoji.length;
+                input.selectionEnd = startPos + emoji.length;
+                document.getElementById('emoji-picker').classList.add('d-none');
+            }
+            
             // Nachrichten laden
             async function loadMessages(partnerId) {
                 try {
                     const response = await fetch(`/chat/get_messages/${partnerId}`);
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    
                     const messages = await response.json();
-
+                    console.log("Geladene Nachrichten:", messages);
+                    
+                    // Messages-Container leeren und neu befüllen
                     const messagesContainer = document.getElementById('messages-container');
                     messagesContainer.innerHTML = '';
-
+                    
+                    // Nachrichten anzeigen
                     messages.forEach(msg => {
+                        const isSent = msg.sender_id == {{ current_user.id }};
                         const messageDiv = document.createElement('div');
-                        messageDiv.className = `message ${msg.type}`;
+                        messageDiv.className = `message ${isSent ? 'sent' : 'received'}`;
+                        messageDiv.dataset.messageId = msg.id;
+                        
                         messageDiv.innerHTML = `
-                            <p>${msg.message}</p>
-                            <div class="time-stamp text-end">${msg.timestamp}</div>
+                            <div class="message-content">
+                                ${msg.message}
+                            </div>
+                            <div class="time-stamp">${msg.timestamp}</div>
                         `;
+                        
                         messagesContainer.appendChild(messageDiv);
                     });
-
+                    
                     scrollToBottom();
                 } catch (error) {
-                    console.error('Fehler beim Laden der Nachrichten:', error);
+                    console.error("Fehler beim Laden der Nachrichten:", error);
                 }
             }
-
+            
             // Nachricht senden
             document.getElementById('send-button').addEventListener('click', sendMessage);
             document.getElementById('message-input').addEventListener('keypress', function(e) {
@@ -253,7 +489,8 @@
             async function sendMessage() {
                 const input = document.getElementById('message-input');
                 const message = input.value.trim();
-
+                console.log("Sende Nachricht:", message, "an Partner:", currentPartnerId);
+                
                 if (message && currentPartnerId) {
                     try {
                         const response = await fetch('/chat/send_message', {
@@ -263,19 +500,21 @@
                             },
                             body: JSON.stringify({
                                 receiver_id: currentPartnerId,
-                                message: message
+                                message: message,
+                                formatted: true // Hinweis, dass diese Nachricht Formatierungen enthalten kann
                             })
                         });
 
                         if (response.ok) {
                             input.value = '';
                             loadMessages(currentPartnerId);
-
+                            
                             // Socket.io Nachricht senden
                             socket.emit('send_private_message', {
                                 sender_id: '{{ current_user.id }}',
                                 receiver_id: currentPartnerId,
-                                message: message
+                                message: message,
+                                formatted: true
                             });
                         }
                     } catch (error) {
@@ -287,7 +526,7 @@
             // Echtzeit-Nachrichten empfangen
             socket.on('private_message', (data) => {
                 if (data.sender_id == currentPartnerId) {
-                    // Wenn der aktuelle Chat geöffnet ist, Nachricht anzeigen
+                    // Wenn der aktuelle Chat ge철ffnet ist, Nachricht anzeigen
                     if (currentPartnerId == data.sender_id) {
                         loadMessages(currentPartnerId);
                     } else {
@@ -306,14 +545,52 @@
                 }
             });
 
+            // Reaktionen hinzuf체gen
+            async function addReaction(messageId, emoji) {
+                try {
+                    const response = await fetch('/chat/add_reaction', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            message_id: messageId,
+                            emoji: emoji
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        // Socket.IO Ereignis, um andere Benutzer 체ber die Reaktion zu informieren
+                        socket.emit('message_reaction', {
+                            message_id: messageId,
+                            emoji: emoji,
+                            user_id: '{{ current_user.id }}'
+                        });
+                        
+                        // Nachrichten neu laden, um die Reaktion anzuzeigen
+                        loadMessages(currentPartnerId);
+                    }
+                } catch (error) {
+                    console.error('Fehler beim Hinzuf체gen der Reaktion:', error);
+                }
+            }
+            
+            // Reaktionen anzeigen
+            function showReactionPicker(messageId) {
+                const picker = document.getElementById(`reaction-picker-${messageId}`);
+                if (picker) {
+                    picker.classList.toggle('d-none');
+                }
+            }
+
             function scrollToBottom() {
                 const container = document.getElementById('messages-container');
                 if (container) container.scrollTop = container.scrollHeight;
             }
 
-            // Chat löschen
+            // Chat l철schen
             document.getElementById('delete-chat').addEventListener('click', async function() {
-                if (confirm(`Möchtest du den Chat mit ${currentPartnerUsername} wirklich löschen?`)) {
+                if (confirm(`M철chtest du den Chat mit ${currentPartnerUsername} wirklich l철schen?`)) {
                     try {
                         const response = await fetch(`/chat/delete_chat/${currentPartnerId}`, {
                             method: 'DELETE'
@@ -323,11 +600,57 @@
                             location.reload(); // Seite neu laden
                         }
                     } catch (error) {
-                        console.error('Fehler beim Löschen des Chats:', error);
+                        console.error('Fehler beim L철schen des Chats:', error);
                     }
                 }
             });
+
+            // Reaktionsereignis-Listener
+            socket.on('message_reaction', (data) => {
+                if (currentPartnerId) {
+                    loadMessages(currentPartnerId);
+                }
+            });
+            
+            // Nachrichtenl철schereignis-Listener
+            socket.on('message_deleted', (data) => {
+                if (currentPartnerId) {
+                    loadMessages(currentPartnerId);
+                }
+            });
+            
+            // Funktionen f체r die Verwendung in HTML im globalen Scope verf체gbar machen
+            window.formatText = formatText;
+            window.setTextColor = setTextColor;
+            window.showEmojiPicker = showEmojiPicker;
+            window.insertEmoji = insertEmoji;
+            window.addReaction = addReaction;
+            window.showReactionPicker = showReactionPicker;
+            window.deleteMessage = deleteMessage;
         });
+        
+        // In das Script in private_chats.html einf체gen:
+        async function deleteMessage(messageId) {
+            if (confirm('M철chtest du diese Nachricht wirklich l철schen?')) {
+                try {
+                    const response = await fetch(`/chat/delete_message/${messageId}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        // Entferne Nachricht aus der Anzeige
+                        loadMessages(currentPartnerId);
+                        
+                        // Informiere andere 체ber Socket.io
+                        socket.emit('message_deleted', {
+                            message_id: messageId
+                        });
+                    }
+                } catch (error) {
+                    console.error('Fehler beim L철schen der Nachricht:', error);
+                }
+            }
+        }
     </script>
 </body>
 </html>

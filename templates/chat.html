@@ -108,7 +108,8 @@
                     msg: message,
                     username: username,
                     color: userColor,
-                    replyTo: replyingTo
+                    replyTo: replyingTo,
+                    user_id: {{ current_user.id }}
                 });
                 clearReply();
                 messageInput.value = '';
@@ -145,8 +146,16 @@
 
             messageElement.innerHTML = `
                 <div class="profile-container d-flex align-items-center mb-2">
-                    <img src="${profileImageUrl}" alt="${data.username}'s Profilbild" class="profile-image me-2" onerror="this.src='/static/profile_pics/default_profile_image.png'">
-                    <span class="username" style="color: ${data.color}">${data.username}</span>
+                    <img src="${profileImageUrl}" 
+                         alt="${data.username}'s Profilbild" 
+                         class="profile-image me-2"
+                         onclick="startPrivateChat('${data.username}', ${data.user_id})" 
+                         style="cursor: pointer;"
+                         onerror="this.src='/static/profile_pics/default_profile_image.png'">
+                    <span class="username" style="color: ${data.color}" 
+                          onclick="startPrivateChat('${data.username}', ${data.user_id})">
+                        ${data.username}
+                    </span>
                 </div>
                 ${data.replyTo ? `<div class="reply text-muted mb-2">Antwort auf: ${data.replyTo}</div>` : ''}
                 <p class="message-text mb-2">${data.msg}</p>
@@ -245,6 +254,31 @@
             }
 
             toggleReactionMenu(messageId);
+        }
+
+        function startPrivateChat(username, userId) {
+            console.log("startPrivateChat aufgerufen:", username, userId);
+            
+            // Fehlerbehandlung für fehlende userId
+            if (!userId || userId === "undefined" || userId === undefined) {
+                // User-ID anhand des Benutzernamens nachschlagen
+                fetch(`/chat/get_user_id_by_name/${encodeURIComponent(username)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.user_id) {
+                            window.location.href = `/chat/private/${data.user_id}`;
+                        } else {
+                            alert(`Kann keinen privaten Chat mit ${username} starten: Benutzer nicht gefunden.`);
+                        }
+                    })
+                    .catch(error => {
+                        console.error("Fehler beim Abrufen der User-ID:", error);
+                        alert("Fehler beim Starten des privaten Chats. Bitte versuche es später erneut.");
+                    });
+            } else {
+                // Normal weiterleiten wenn userId vorhanden ist
+                window.location.href = `/chat/private/${userId}`;
+            }
         }
     </script>
 </body>
