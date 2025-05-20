@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Private Chats</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+<link rel="stylesheet" href="/static/css/header.css">
+<link rel="stylesheet" href="/static/css/home.css">
+
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome f체r Icons -->
@@ -323,13 +327,15 @@
             // Chat-Suche
             document.getElementById('chat-search').addEventListener('input', function(e) {
                 const searchTerm = e.target.value.toLowerCase();
-                document.querySelectorAll('.chat-item').forEach(item => {
+              document.querySelectorAll('.chat-item').forEach(item => {
+    item.addEventListener('click', function() {
                     const username = item.dataset.username.toLowerCase();
                     if (username.includes(searchTerm)) {
                         item.style.display = 'flex';
                     } else {
                         item.style.display = 'none';
                     }
+                     loadMessages(currentPartnerId);
                 });
             });
 
@@ -526,12 +532,10 @@ if (currentPartnerAvatar) {
 
             // Echtzeit-Nachrichten empfangen
             socket.on('private_message', (data) => {
-                if (data.sender_id == currentPartnerId) {
-                    // Wenn der aktuelle Chat ge철ffnet ist, Nachricht anzeigen
-                    if (currentPartnerId == data.sender_id) {
-                        loadMessages(currentPartnerId);
-                    } else {
-                        // Ungelesene Nachrichten anzeigen
+    // Assuming data contains the message
+    if (data.sender_id == currentPartnerId) {
+        loadMessages(currentPartnerId); // Refresh messages
+    } else { // Ungelesene Nachrichten anzeigen
                         const chatItem = document.querySelector(`.chat-item[data-partner-id="${data.sender_id}"]`);
                         if (chatItem) {
                             const unreadBadge = chatItem.querySelector('.unread-badge');
@@ -543,7 +547,7 @@ if (currentPartnerAvatar) {
                                 data.message.length > 30 ? data.message.substring(0, 30) + '...' : data.message;
                         }
                     }
-                }
+
             });
 
             // Reaktionen hinzuf체gen

@@ -160,8 +160,16 @@
                 ${data.replyTo ? `<div class="reply text-muted mb-2">Antwort auf: ${data.replyTo}</div>` : ''}
                 <p class="message-text mb-2">${data.msg}</p>
                 <span class="time text-muted small">${data.time}</span>
-                <button class="reply-button btn btn-outline-secondary btn-sm position-absolute end-0 top-50 translate-middle-y me-2">&#8592; Antworten</button>
-                ${isAdmin ? `<button class="delete-button btn btn-danger btn-sm position-absolute" style="right: 10px; bottom: 20px; transform: translateY(50%);">&#10060; Löschen</button>` : ''}
+
+                <div class="dropdown position-absolute top-0 end-0 m-2">
+                    <button class="btn btn-sm btn-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        &#8942;
+                    </button>
+                    <ul class="dropdown-menu">
+                        <li><a class="dropdown-item reply-button" href="#">↩️ Antworten</a></li>
+                        ${isAdmin ? `<li><a class="dropdown-item delete-button text-danger" href="#">❌ Löschen</a></li>` : ''}
+                    </ul>
+                </div>
 
                 <div class="reaction-icon-trigger" onclick="toggleReactionMenu('${data.message_id}')">💬</div>
                 <div class="reaction-menu" id="reaction-menu-${data.message_id}">
@@ -173,19 +181,25 @@
                 <div class="reaction-display" id="reactions-${data.message_id}"></div>
             `;
 
-            if (isAdmin) {
-                const deleteButton = messageElement.querySelector('.delete-button');
-                deleteButton.onclick = function(event) {
+            const replyButton = messageElement.querySelector('.reply-button');
+            if (replyButton) {
+                replyButton.onclick = function(event) {
+                    event.preventDefault();
                     event.stopPropagation();
-                    socket.emit('delete_message', { message_id: data.message_id });
+                    setReplyToMessage(data.msg);
                 };
             }
 
-            const replyButton = messageElement.querySelector('.reply-button');
-            replyButton.onclick = function(event) {
-                event.stopPropagation();
-                setReplyToMessage(data.msg);
-            };
+            if (isAdmin) {
+                const deleteButton = messageElement.querySelector('.delete-button');
+                if (deleteButton) {
+                    deleteButton.onclick = function(event) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        socket.emit('delete_message', { message_id: data.message_id });
+                    };
+                }
+            }
 
             messagesDiv.appendChild(messageElement);
             messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -214,31 +228,23 @@
             }, 5000);
         });
 
-        const userReactions = new Set();
-
         function toggleReactionMenu(messageId) {
             const menu = document.getElementById('reaction-menu-' + messageId);
             menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
         }
 
         function addReaction(button, messageId, emoji) {
-            // Socket.IO Event senden, um die Reaktion an alle Clients weiterzuleiten
             socket.emit('react_message', {
                 message_id: messageId,
                 emoji: emoji,
                 username: username
             });
-            
-            // Menü schließen nachdem die Reaktion gesendet wurde
             toggleReactionMenu(messageId);
         }
 
         function startPrivateChat(username, userId) {
             console.log("startPrivateChat aufgerufen:", username, userId);
-            
-            // Fehlerbehandlung für fehlende userId
             if (!userId || userId === "undefined" || userId === undefined) {
-                // User-ID anhand des Benutzernamens nachschlagen
                 fetch(`/chat/get_user_id_by_name/${encodeURIComponent(username)}`)
                     .then(response => response.json())
                     .then(data => {
@@ -253,7 +259,6 @@
                         alert("Fehler beim Starten des privaten Chats. Bitte versuche es später erneut.");
                     });
             } else {
-                // Normal weiterleiten wenn userId vorhanden ist
                 window.location.href = `/chat/private/${userId}`;
             }
         }
@@ -261,19 +266,14 @@
         socket.on('react_message', function(data) {
             const { message_id, emoji, username } = data;
             const container = document.getElementById('reactions-' + message_id);
-            
-            if (!container) return; // Falls die Nachricht nicht gefunden wird
-            
-            // Prüfen, ob es bereits eine Reaktion mit diesem Emoji gibt
+            if (!container) return;
+
             let span = container.querySelector(`span[data-emoji='${emoji}']`);
-            
             if (span) {
-                // Reaktion existiert bereits, Zähler erhöhen
                 let count = parseInt(span.getAttribute('data-count')) + 1;
                 span.setAttribute('data-count', count);
                 span.innerText = emoji + ' ' + count;
             } else {
-                // Neue Reaktion hinzufügen
                 span = document.createElement('span');
                 span.setAttribute('data-emoji', emoji);
                 span.setAttribute('data-count', 1);
@@ -283,5 +283,8 @@
             }
         });
     </script>
+
+    <!-- Bootstrap JS für Dropdowns -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
