@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Private Chats</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Font Awesome für Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Eigenes CSS -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}" />
     <style>
         .chat-container {
             max-width: 1200px;
@@ -22,19 +19,24 @@
             background-color: #f8f9fa;
             height: 600px;
             overflow-y: auto;
+            position: relative;
         }
         .chat-messages {
             background-color: #ffffff;
             height: 600px;
-            overflow-y: auto;
-            padding: 20px;
+            overflow-y: hidden;
+            padding: 0;
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
         .chat-item {
             padding: 15px;
             border-bottom: 1px solid #e9ecef;
             cursor: pointer;
             transition: background-color 0.3s;
+            display: flex;
+            align-items: center;
         }
         .chat-item:hover {
             background-color: #e9ecef;
@@ -50,19 +52,22 @@
             margin-right: 15px;
         }
         .message-input {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
             padding: 15px;
             background-color: #f8f9fa;
             border-top: 1px solid #e9ecef;
+        }
+        .messages-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 15px;
         }
         .message {
             margin-bottom: 15px;
             padding: 10px 15px;
             border-radius: 10px;
             max-width: 70%;
+            word-wrap: break-word;
+            white-space: pre-wrap;
         }
         .received {
             background-color: #e9ecef;
@@ -90,28 +95,60 @@
             justify-content: center;
             margin-left: auto;
         }
+        .add-chat-button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            position: relative;
+        }
+        #no-chat-selected {
+            padding: 50px;
+        }
+        .user-popup {
+            position: absolute;
+            top: 60px;
+            right: 10px;
+            background-color: white;
+            width: 260px;
+            max-height: 400px;
+            border: 1px solid #ced4da;
+            border-radius: 10px;
+            padding: 10px;
+            z-index: 999;
+            box-shadow: 0 0 10px rgba(0,0,0,0.15);
+        }
+        .popup-user-list {
+            max-height: 320px;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
-    <!-- Header einbinden -->
-    {% include 'header.html' %}
-
-    <div class="container mt-5">
-        <h2 class="mb-4"><i class="fas fa-comments me-2"></i>Private Chats</h2>
-
-        <div class="chat-container">
-            <div class="row g-0">
-                <!-- Chat-Liste -->
-                <div class="col-md-4 chat-list">
-                    <div class="d-flex align-items-center p-3 border-bottom">
-                        <input type="text" class="form-control" placeholder="Chat suchen..." id="chat-search">
+{% include 'header.html' %}
+<div class="container mt-5">
+    <h2 class="mb-4"><i class="fas fa-comments me-2"></i>Private Chats</h2>
+    <div class="chat-container">
+        <div class="row g-0">
+            <div class="col-md-4 chat-list">
+                <div class="d-flex align-items-center p-3 border-bottom position-relative">
+                    <input type="text" class="form-control" placeholder="Chat suchen..." id="chat-search" autocomplete="off" />
+                    <button class="add-chat-button ms-2" id="add-chat" title="Neuen Chat starten"><i class="fas fa-plus"></i></button>
+                    <div id="user-popup" class="user-popup d-none">
+                        <input type="text" class="form-control mb-2" placeholder="User suchen..." id="popup-user-search" />
+                        <div id="popup-user-list" class="popup-user-list"></div>
                     </div>
-
+                </div>
+                <div id="chat-list-container" class="p-2">
                     {% for partner in chat_partners %}
-                    <div class="chat-item d-flex align-items-center" data-partner-id="{{ partner.id }}" data-username="{{ partner.username }}">
-                        <img src="{{ partner.profile_image if partner.profile_image else url_for('static', filename='img/default-profile.png') }}"
-                             class="user-avatar"
-                             alt="{{ partner.username }}">
+                    <div class="chat-item" data-partner-id="{{ partner.id }}" data-username="{{ partner.username }}">
+                        <img src="{{ partner.profile_image if partner.profile_image else url_for('static', filename='img/default-profile.png') }}" class="user-avatar" alt="{{ partner.username }}" />
                         <div class="d-flex flex-grow-1 align-items-center">
                             <div>
                                 <h6 class="mb-1">{{ partner.username }}</h6>
@@ -127,34 +164,28 @@
                     </div>
                     {% endfor %}
                 </div>
-
-                <!-- Chat-Nachrichten -->
-                <div class="col-md-8 chat-messages">
-                    <div class="text-center text-muted p-5" id="no-chat-selected">
-                        <i class="fas fa-comment-dots fa-3x mb-3"></i>
-                        <h4>Wähle einen Chat aus</h4>
-                        <p>Wähle einen Kontakt aus, um die Nachrichten anzuzeigen</p>
-                    </div>
-
-                    <div id="chat-display" class="d-none">
-                        <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
-                            <div class="d-flex align-items-center">
-                                <img id="current-partner-avatar" class="user-avatar" src="">
-                                <h5 class="mb-0 ms-3" id="current-partner-name"></h5>
-                            </div>
-                            <button class="btn btn-sm btn-outline-danger" id="delete-chat">
-                                <i class="fas fa-trash"></i>
-                            </button>
+            </div>
+            <div class="col-md-8 chat-messages d-flex flex-column">
+                <div class="text-center text-muted" id="no-chat-selected">
+                    <i class="fas fa-comment-dots fa-3x mb-3"></i>
+                    <h4>Wähle einen Chat aus</h4>
+                    <p>Wähle einen Kontakt aus, um die Nachrichten anzuzeigen</p>
+                </div>
+                <div id="chat-display" class="d-none flex-column flex-grow-1">
+                    <div class="d-flex justify-content-between align-items-center p-3 border-bottom">
+                        <div class="d-flex align-items-center">
+                            <img id="current-partner-avatar" class="user-avatar" src="" alt="Chatpartner" />
+                            <h5 class="mb-0 ms-3" id="current-partner-name"></h5>
                         </div>
-                        <div class="messages-content" style="height: 450px; overflow-y: auto; padding: 15px;" id="messages-container">
-                            <!-- Nachrichten werden hier dynamisch eingefügt -->
-                        </div>
+                        <button class="btn btn-sm btn-outline-danger" id="delete-chat" title="Chat löschen">
+                            <i class="fas fa-trash"></i>
+                        </button>
                     </div>
-
-                    <div class="message-input d-none" id="message-input-area">
+                    <div class="messages-content flex-grow-1" id="messages-container"></div>
+                    <div class="message-input">
                         <div class="input-group">
-                            <input type="text" class="form-control" placeholder="Nachricht schreiben..." id="message-input">
-                            <button class="btn btn-primary" type="button" id="send-button">
+                            <input type="text" class="form-control" placeholder="Nachricht schreiben..." id="message-input" autocomplete="off" />
+                            <button class="btn btn-primary" type="button" id="send-button" title="Nachricht senden">
                                 <i class="fas fa-paper-plane"></i>
                             </button>
                         </div>
@@ -163,171 +194,74 @@
             </div>
         </div>
     </div>
+</div>
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const addChatBtn = document.getElementById('add-chat');
+    const userPopup = document.getElementById('user-popup');
+    const popupSearch = document.getElementById('popup-user-search');
+    const popupUserList = document.getElementById('popup-user-list');
 
-    <!-- Bootstrap JS Bundle mit Popper -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Socket.io -->
-    <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const socket = io();
-            let currentPartnerId = null;
-            let currentPartnerUsername = null;
-            let currentPartnerAvatar = null;
+    async function loadAllUsers() {
+        try {
+            const response = await fetch('/chat/all_users');
+            const users = await response.json();
+            popupUserList.innerHTML = '';
 
-            // Chat-Suche
-            document.getElementById('chat-search').addEventListener('input', function(e) {
-                const searchTerm = e.target.value.toLowerCase();
-                document.querySelectorAll('.chat-item').forEach(item => {
-                    const username = item.dataset.username.toLowerCase();
-                    if (username.includes(searchTerm)) {
-                        item.style.display = 'flex';
-                    } else {
-                        item.style.display = 'none';
-                    }
-                });
+            users.forEach(user => {
+                const userDiv = document.createElement('div');
+                userDiv.className = 'chat-item new-chat-user';
+                userDiv.dataset.userId = user.id;
+                userDiv.dataset.username = user.username;
+                userDiv.innerHTML = `
+                    <img src="${user.profile_image || '/static/img/default-profile.png'}" class="user-avatar" alt="${user.username}" />
+                    <div><h6 class="mb-0">${user.username}</h6></div>
+                `;
+                userDiv.addEventListener('click', () => startChat(user.id));
+                popupUserList.appendChild(userDiv);
             });
+        } catch (err) {
+            console.error('Fehler beim Laden der Benutzer:', err);
+        }
+    }
 
-            // Chat-Partner auswählen
-            document.querySelectorAll('.chat-item').forEach(item => {
-                item.addEventListener('click', function() {
-                    currentPartnerId = this.dataset.partnerId;
-                    currentPartnerUsername = this.dataset.username;
-                    currentPartnerAvatar = this.querySelector('img').src;
+    addChatBtn.addEventListener('click', () => {
+        userPopup.classList.toggle('d-none');
+        popupSearch.value = '';
+        loadAllUsers();
+    });
 
-                    // UI aktualisieren
-                    document.querySelectorAll('.chat-item').forEach(i => i.classList.remove('active'));
-                    this.classList.add('active');
-
-                    // Chat anzeigen
-                    document.getElementById('no-chat-selected').classList.add('d-none');
-                    document.getElementById('chat-display').classList.remove('d-none');
-                    document.getElementById('message-input-area').classList.remove('d-none');
-
-                    document.getElementById('current-partner-name').textContent = currentPartnerUsername;
-                    document.getElementById('current-partner-avatar').src = currentPartnerAvatar;
-
-                    // Nachrichten laden
-                    loadMessages(currentPartnerId);
-
-                    // Ungelesene Nachrichten zurücksetzen
-                    const unreadBadge = this.querySelector('.unread-badge');
-                    unreadBadge.classList.add('d-none');
-                    unreadBadge.textContent = '0';
-                });
-            });
-
-            // Nachrichten laden
-            async function loadMessages(partnerId) {
-                try {
-                    const response = await fetch(`/chat/get_messages/${partnerId}`);
-                    const messages = await response.json();
-
-                    const messagesContainer = document.getElementById('messages-container');
-                    messagesContainer.innerHTML = '';
-
-                    messages.forEach(msg => {
-                        const messageDiv = document.createElement('div');
-                        messageDiv.className = `message ${msg.type}`;
-                        messageDiv.innerHTML = `
-                            <p>${msg.message}</p>
-                            <div class="time-stamp text-end">${msg.timestamp}</div>
-                        `;
-                        messagesContainer.appendChild(messageDiv);
-                    });
-
-                    scrollToBottom();
-                } catch (error) {
-                    console.error('Fehler beim Laden der Nachrichten:', error);
-                }
-            }
-
-            // Nachricht senden
-            document.getElementById('send-button').addEventListener('click', sendMessage);
-            document.getElementById('message-input').addEventListener('keypress', function(e) {
-                if (e.key === 'Enter') {
-                    sendMessage();
-                }
-            });
-
-            async function sendMessage() {
-                const input = document.getElementById('message-input');
-                const message = input.value.trim();
-
-                if (message && currentPartnerId) {
-                    try {
-                        const response = await fetch('/chat/send_message', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                            },
-                            body: JSON.stringify({
-                                receiver_id: currentPartnerId,
-                                message: message
-                            })
-                        });
-
-                        if (response.ok) {
-                            input.value = '';
-                            loadMessages(currentPartnerId);
-
-                            // Socket.io Nachricht senden
-                            socket.emit('send_private_message', {
-                                sender_id: '{{ current_user.id }}',
-                                receiver_id: currentPartnerId,
-                                message: message
-                            });
-                        }
-                    } catch (error) {
-                        console.error('Fehler beim Senden der Nachricht:', error);
-                    }
-                }
-            }
-
-            // Echtzeit-Nachrichten empfangen
-            socket.on('private_message', (data) => {
-                if (data.sender_id == currentPartnerId) {
-                    // Wenn der aktuelle Chat geöffnet ist, Nachricht anzeigen
-                    if (currentPartnerId == data.sender_id) {
-                        loadMessages(currentPartnerId);
-                    } else {
-                        // Ungelesene Nachrichten anzeigen
-                        const chatItem = document.querySelector(`.chat-item[data-partner-id="${data.sender_id}"]`);
-                        if (chatItem) {
-                            const unreadBadge = chatItem.querySelector('.unread-badge');
-                            unreadBadge.classList.remove('d-none');
-                            unreadBadge.textContent = parseInt(unreadBadge.textContent) + 1;
-
-                            // Letzte Nachricht aktualisieren
-                            chatItem.querySelector('.last-message-preview').textContent =
-                                data.message.length > 30 ? data.message.substring(0, 30) + '...' : data.message;
-                        }
-                    }
-                }
-            });
-
-            function scrollToBottom() {
-                const container = document.getElementById('messages-container');
-                if (container) container.scrollTop = container.scrollHeight;
-            }
-
-            // Chat löschen
-            document.getElementById('delete-chat').addEventListener('click', async function() {
-                if (confirm(`Möchtest du den Chat mit ${currentPartnerUsername} wirklich löschen?`)) {
-                    try {
-                        const response = await fetch(`/chat/delete_chat/${currentPartnerId}`, {
-                            method: 'DELETE'
-                        });
-
-                        if (response.ok) {
-                            location.reload(); // Seite neu laden
-                        }
-                    } catch (error) {
-                        console.error('Fehler beim Löschen des Chats:', error);
-                    }
-                }
-            });
+    popupSearch.addEventListener('input', () => {
+        const term = popupSearch.value.toLowerCase();
+        document.querySelectorAll('#popup-user-list .new-chat-user').forEach(item => {
+            const username = item.dataset.username.toLowerCase();
+            item.style.display = username.includes(term) ? 'flex' : 'none';
         });
-    </script>
+    });
+
+    document.addEventListener('click', (event) => {
+        if (!addChatBtn.contains(event.target) && !userPopup.contains(event.target)) {
+            userPopup.classList.add('d-none');
+        }
+    });
+
+    async function startChat(userId) {
+        try {
+            const response = await fetch(`/chat/start_chat/${userId}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'}
+            });
+            if (response.ok) {
+                location.reload();
+            } else {
+                throw new Error('Chat konnte nicht erstellt werden');
+            }
+        } catch (err) {
+            alert('Fehler beim Erstellen des Chats.');
+            console.error(err);
+        }
+    }
+});
+</script>
 </body>
 </html>

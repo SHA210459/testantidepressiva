@@ -131,3 +131,4 @@ def private_chats():
     cursor.close()
 
     return render_template('private_chats.html', chat_partners=chat_partners)
+

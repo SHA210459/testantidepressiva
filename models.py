@@ -302,3 +302,4 @@ class PrivateMessage:
 create_tables()
 create_tips_table()
 create_chat_tables()  # Neue Funktion aufrufen
+
