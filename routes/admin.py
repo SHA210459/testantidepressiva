@@ -101,13 +101,40 @@ def toggle_ban(user_id):
 @admin_bp.route('/delete_user/<int:user_id>', methods=['POST'])
 @login_required
 def delete_user(user_id):
-    if current_user.role != 'admin':
+    if not current_user.is_admin():
         flash('Keine Berechtigung!', 'error')
         return redirect(url_for('admin.dashboard'))
-
-    cursor = db.cursor()
-    cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
-    db.commit()
-    cursor.close()
-    flash('Benutzer gelöscht.', 'success')
+    
+    try:
+        cursor = db.cursor()
+        
+        # Schritt 1: Chat-Sessions löschen
+        cursor.execute("""
+            DELETE FROM chat_sessions 
+            WHERE user1_id = %s OR user2_id = %s
+        """, (user_id, user_id))
+        
+        # Schritt 2: Private Nachrichten löschen
+        cursor.execute("""
+            DELETE FROM private_messages 
+            WHERE sender_id = %s OR receiver_id = %s
+        """, (user_id, user_id))
+        
+        # Schritt 3: Nachrichtenreaktionen löschen
+        cursor.execute("""
+            DELETE FROM message_reactions 
+            WHERE user_id = %s
+        """, (user_id,))
+        
+        # Schritt 4: Benutzer löschen
+        cursor.execute("DELETE FROM users WHERE id = %s", (user_id,))
+        
+        db.commit()
+        flash('Benutzer und alle zugehörigen Daten erfolgreich gelöscht.', 'success')
+    except Exception as e:
+        db.rollback()
+        flash(f'Fehler beim Löschen des Benutzers: {str(e)}', 'error')
+    finally:
+        cursor.close()
+        
     return redirect(url_for('admin.dashboard'))
