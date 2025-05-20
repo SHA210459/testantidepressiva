@@ -60,7 +60,9 @@ def handle_react_message(data):
     message_id = data.get('message_id')
     emoji = data.get('emoji')
     username = data.get('username')
-
+    
+    print(f"Reaktion erhalten: {username} reagierte mit {emoji} auf Nachricht {message_id}")
+    
     # Sende das Emoji-Reaktions-Event an alle Clients
     emit('react_message', {
         'message_id': message_id,

@@ -222,37 +222,14 @@
         }
 
         function addReaction(button, messageId, emoji) {
-            const key = `${messageId}:${emoji}`;
-            const container = document.getElementById('reactions-' + messageId);
-            let span = container.querySelector("span[data-emoji='" + emoji + "']");
-
-            if (userReactions.has(key)) {
-                userReactions.delete(key);
-                if (span) {
-                    let count = parseInt(span.getAttribute('data-count')) - 1;
-                    if (count > 0) {
-                        span.setAttribute('data-count', count);
-                        span.innerText = emoji + ' ' + count;
-                    } else {
-                        span.remove();
-                    }
-                }
-            } else {
-                userReactions.add(key);
-                if (span) {
-                    let count = parseInt(span.getAttribute('data-count')) + 1;
-                    span.setAttribute('data-count', count);
-                    span.innerText = emoji + ' ' + count;
-                } else {
-                    span = document.createElement('span');
-                    span.setAttribute('data-emoji', emoji);
-                    span.setAttribute('data-count', 1);
-                    span.style.marginRight = '10px';
-                    span.innerText = emoji + ' 1';
-                    container.appendChild(span);
-                }
-            }
-
+            // Socket.IO Event senden, um die Reaktion an alle Clients weiterzuleiten
+            socket.emit('react_message', {
+                message_id: messageId,
+                emoji: emoji,
+                username: username
+            });
+            
+            // Menü schließen nachdem die Reaktion gesendet wurde
             toggleReactionMenu(messageId);
         }
 
@@ -280,6 +257,31 @@
                 window.location.href = `/chat/private/${userId}`;
             }
         }
+
+        socket.on('react_message', function(data) {
+            const { message_id, emoji, username } = data;
+            const container = document.getElementById('reactions-' + message_id);
+            
+            if (!container) return; // Falls die Nachricht nicht gefunden wird
+            
+            // Prüfen, ob es bereits eine Reaktion mit diesem Emoji gibt
+            let span = container.querySelector(`span[data-emoji='${emoji}']`);
+            
+            if (span) {
+                // Reaktion existiert bereits, Zähler erhöhen
+                let count = parseInt(span.getAttribute('data-count')) + 1;
+                span.setAttribute('data-count', count);
+                span.innerText = emoji + ' ' + count;
+            } else {
+                // Neue Reaktion hinzufügen
+                span = document.createElement('span');
+                span.setAttribute('data-emoji', emoji);
+                span.setAttribute('data-count', 1);
+                span.style.marginRight = '10px';
+                span.innerText = emoji + ' 1';
+                container.appendChild(span);
+            }
+        });
     </script>
 </body>
 </html>
